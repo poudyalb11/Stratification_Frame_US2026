@@ -1,1 +1,1 @@
-The script in this folder corresponds to the actual script run during the process of developing the stratification frame
+The script in this folder corresponds to the actual raw script run to create the required data files
