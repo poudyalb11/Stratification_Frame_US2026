@@ -17,6 +17,35 @@ Produces `pums_clean.rds`.
 - Variables retained from extract: 24
 - Source: ipums.org
 
+Full set of variables and example data:
+
+|Column     |Value       |What it means                                                                                                 |
+|-----------|------------|--------------------------------------------------------------------------------------------------------------|
+|`YEAR`     |2024        |This record comes from the 2024 ACS survey wave                                                               |
+|`MULTYEAR` |2020        |This person was actually surveyed in 2020 — remember the 5-year file pools 2020–2024                          |
+|`SAMPLE`   |202403      |IPUMS internal sample identifier — ignore                                                                     |
+|`SERIAL`   |3588050     |Unique household ID — links this person to their household                                                    |
+|`CBSERIAL` |2.02e+12    |Original Census Bureau household ID — ignore                                                                  |
+|`HHWT`     |84          |Household weight — this household represents 84 households in the real population                             |
+|`CLUSTER`  |2.024036e+12|Variance estimation cluster — used for standard errors, ignore for now                                        |
+|`STATEFIP` |28          |State FIPS code 28 = **Mississippi**                                                                          |
+|`PUMA`     |400         |PUMA 00400 within Mississippi                                                                                 |
+|`CPUMA1020`|846         |Consistent PUMA identifier bridging 2010 and 2020 boundaries                                                  |
+|`STRATA`   |40028       |Variance estimation strata — used for standard errors, ignore for now                                         |
+|`GQ`       |1           |Group quarters status = **1, a regular household** — this person stays in your frame                          |
+|`HHINCOME` |91334       |Total household income = **$91,334**                                                                          |
+|`PERNUM`   |1           |This is **person #1** in their household — i.e. the first person listed                                       |
+|`PERWT`    |83          |**Person weight = 83** — this one record represents 83 real people in Mississippi with similar characteristics|
+|`SEX`      |2           |**2 = Female** (1 = Male in IPUMS coding)                                                                     |
+|`AGE`      |70          |**70 years old**                                                            |
+|`RACE`     |1           |**1 = White** in IPUMS coding                                                                                 |
+|`RACED`    |100         |Detailed race code — White, no further detail                                                                 |
+|`HISPAN`   |0           |**0 = Not Hispanic**                                                                                          |
+|`HISPAND`  |0           |Detailed Hispanic code — not Hispanic                                                                         |
+|`EDUC`     |8           |**8 = Some college** in IPUMS coding                                                                          |
+|`EDUCD`    |81          |Detailed education code — some college, no degree                                                             |
+|'CITIZEN'  |3          | Is a citizen
+
 ### Diagnostics
 - 5 categories of Group Quarters (GQ) present in data (codes 1-5; codes 0 and 6 have 0 rows even though they're valid in the DDI)
 - 51 unique states (50 states + DC; DC dropped at a later stage)
