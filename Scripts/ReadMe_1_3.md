@@ -44,7 +44,7 @@ Full set of variables and example data:
 |`HISPAND`  |0           |Detailed Hispanic code — not Hispanic                                                                         |
 |`EDUC`     |8           |**8 = Some college** in IPUMS coding                                                                          |
 |`EDUCD`    |81          |Detailed education code — some college, no degree                                                             |
-|'CITIZEN'  |3          | Is a citizen
+|'CITIZEN'  |3          | Is a naturalized citizen
 
 ### Diagnostics
 - 5 categories of Group Quarters (GQ) present in data (codes 1-5; codes 0 and 6 have 0 rows even though they're valid in the DDI)
