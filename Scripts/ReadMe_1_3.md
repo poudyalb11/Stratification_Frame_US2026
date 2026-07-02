@@ -12,7 +12,7 @@ Produces `pums_clean.rds`.
 ### Data sources used
 - IPUMS USA ACS 2023 5-Year PUMS
 - Extract ID: usa_00003
-- Years: 2019-2023 pooled
+- Years: 2020-2024 pooled
 - N records: 16,095,728 individuals
 - Variables retained from extract: 24
 - Source: ipums.org
