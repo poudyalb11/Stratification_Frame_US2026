@@ -128,7 +128,7 @@ After loading, the following quality issues were detected and documented (not al
 
 **afact sum issues** — afact values should sum to exactly 1.0 per (state, PUMA), since allocation factors represent population shares. Empirical findings:
 - Most PUMAs sum exactly to 1.0
-- Some sum to approximately 0.99 or 1.01 due to rounding artifacts in the Geocorr file
+- Some sum to approximately 0.9999 or 1.0001 due to rounding artifacts in the Geocorr file
 - A few rows have afact = 0.0 (no population in that PUMA × CD intersection)
 
 These are minor data artifacts and do not require correction. Downstream joins use afact as a population-share weight; small rounding errors propagate to PERWT_adj but are negligible at population scale.
