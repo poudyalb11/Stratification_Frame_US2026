@@ -17,8 +17,7 @@
 #     overlap are flagged as "essentially unchanged" — they can inherit
 #     their 2024 House result as-is.
 #
-#     Inputs:  all_bafs, cd119_redistricted, all_blocks_pop
-#              (all in-memory from earlier geographic scripts)
+#     Inputs:  all_bafs, cd119_redistricted, all_blocks_pop (in-memory or from disk)
 #     Output:  cd_2026_inheritance.rds
 #
 #   Script 18B — Assemble base training table (training_table.rds v1)
@@ -69,7 +68,7 @@
 #      throws away genuine information about those whose populations are
 #      effectively the same as in 2024.
 #
-# Inputs (in-memory from Script 08):
+# Inputs:
 #   - all_bafs           : block → cd_2026 (from state BAFs)
 #   - cd119_redistricted : block → cd_119 (from Script 12)
 #   - all_blocks_pop     : block → 2020 population (from tidycensus)
