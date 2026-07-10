@@ -47,7 +47,7 @@ library(tidyr)
 # Notes for downstream documentation:
 #   The DDI codebook reveals several variables that require grouping
 #   before they're usable as cell-defining categories. See the
-#   "Variable groupings and methodology decisions" document for details
+#   ReadMe document for details
 #   on how each is collapsed in Script 03.
 # ══════════════════════════════════════════════════════════════════════════════
 
