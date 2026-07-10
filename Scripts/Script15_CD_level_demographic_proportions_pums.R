@@ -47,13 +47,12 @@ library(tidyverse)
 # (the row-level PUMS) and is the smaller, modeling-ready version.
 
 if (!exists("pums_demographic_cells")) {
-  cat("pums_demographic_cells not in memory -- loading from disk...\n")
-  pums_demographic_cells <- readRDS(
-    "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_demographic_cells.rds"
-  )
+  cat("pums_demographic_cells not in memory -- loading...\n")
+  pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
+  
   cat("Loaded.\n")
 } else {
-  cat("pums_demographic_cells already in memory -- skipping reload.\n")
+  cat("pums_demographic_cells already in memory.\n")
 }
 
 cat("Rows:", nrow(pums_demographic_cells), "\n")
@@ -234,10 +233,6 @@ cat("\nTotal feature columns:",
 
 
 # ── 8. Save ──────────────────────────────────────────────────────────────────
-saveRDS(cd_demographics,
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/cd_demographics.rds")
+saveRDS(cd_demographics,file.path(processed_dir, "cd_demographics.rds"))
 
 cat("\nSaved cd_demographics.rds\n")
-cat("File size:",
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/cd_demographics.rds") / 1e6, 2),
-    "MB\n")
