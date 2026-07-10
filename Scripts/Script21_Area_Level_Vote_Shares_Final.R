@@ -7,7 +7,7 @@
 #   CART imputation), demographic features, state pres features, and
 #   modeling flags — the "prior" for MrsP that raking will adjust.
 #
-# Deliverables (in deliverables_for_mrsp/):
+# Deliverables (in Data_Final/):
 #   - area_level_vote_shares.csv
 #   - area_level_vote_shares.rds
 #
@@ -16,17 +16,19 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+library(here)
 library(tidyverse)
 
-base_path  <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
-output_dir <- paste0(base_path, "deliverables_for_mrsp/")
-
-dir.create(output_dir, showWarnings = FALSE)
+# ── Folder paths ────────────────────────────────────────────────────────────
+processed_dir <- here("Data_Processed")
+final_dir     <- here("Data_Final")
 
 
 # ── 1. Load and diagnostic ──────────────────────────────────────────────────
 
-training_table <- readRDS(paste0(base_path, "training_table_v2.rds"))
+if (!exists("training_table")) {
+  training_table <- readRDS(file.path(processed_dir, "training_table_v2.rds"))
+}
 
 cat("══ Structure ══\n")
 cat("Rows:", nrow(training_table), "(expect 435)\n")
@@ -73,12 +75,10 @@ print(colSums(is.na(training_table)))
 
 # ── 2. Save ─────────────────────────────────────────────────────────────────
 
-write_csv(training_table,
-          paste0(output_dir, "area_level_vote_shares.csv"))
-saveRDS(training_table,
-        paste0(output_dir, "area_level_vote_shares.rds"))
+write_csv(training_table, file.path(final_dir, "area_level_vote_shares.csv"))
+saveRDS(training_table,  file.path(final_dir, "area_level_vote_shares.rds"))
 
 cat("\nSaved area_level_vote_shares.csv and .rds\n")
 cat("File size (CSV):",
-    round(file.info(paste0(output_dir, "area_level_vote_shares.csv"))$size / 1e6, 2),
+    round(file.info(file.path(final_dir, "area_level_vote_shares.csv"))$size / 1e6, 2),
     "MB\n")
