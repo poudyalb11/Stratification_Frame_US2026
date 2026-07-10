@@ -54,11 +54,13 @@ cat("States:", nrow(state_fips_to_abb), "\n")
 
 # ── 2. Apply to pums_demographic_cells ──────────────────────────────────────
 
+
+
+
 if (!exists("pums_demographic_cells")) {
   cat("pums_demographic_cells not in memory -- loading...\n")
-  pums_demographic_cells <- readRDS(
-    "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_demographic_cells.rds"
-  )
+  pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
+  
   cat("Loaded.\n")
 } else {
   cat("pums_demographic_cells already in memory.\n")
@@ -88,9 +90,7 @@ pums_demographic_cells %>%
 
 if (!exists("ces_with_cd_v2")) {
   cat("ces_with_cd_v2 not in memory -- loading...\n")
-  ces_with_cd_v2 <- readRDS(
-    "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds"
-  )
+  ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
   cat("Loaded.\n")
 } else {
   cat("ces_with_cd_v2 already in memory.\n")
@@ -115,27 +115,8 @@ ces_with_cd_v2 %>%
   print()
 
 
-# ── 4. Save both with verification ──────────────────────────────────────────
+# ── 4. Save both ──────────────────────────────────────────
 
-saveRDS(pums_demographic_cells, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_demographic_cells.rds")
+saveRDS(pums_demographic_cells,file.path(processed_dir, "pums_demographic_cells.rds"))
 
-saveRDS(ces_with_cd_v2, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds")
-
-
-# Verify file sizes and quick reload check
-cat("══ Saved files ══\n")
-cat("pums_demographic_cells.rds:", 
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_demographic_cells.rds") / 1e6, 2), 
-    "MB\n")
-cat("ces_with_cd_v2.rds:        ", 
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds") / 1e6, 2), 
-    "MB\n")
-
-# Quick verify columns exist
-cat("\nColumns in saved pums_demographic_cells:\n")
-print(names(pums_demographic_cells))
-
-cat("\nColumns in saved ces_with_cd_v2:\n")
-print(grep("state_abbrv|state_cd", names(ces_with_cd_v2), value = TRUE))
+saveRDS(ces_with_cd_v2, file.path(processed_dir, "ces_with_cd_v2.rds"))
