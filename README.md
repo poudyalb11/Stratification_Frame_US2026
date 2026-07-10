@@ -12,5 +12,5 @@ Research project at the AI Pop Up Lab, University of Amsterdam.
    source("install_packages.R")
    ```
 5. Run the scripts in the `Scripts/` folder using one of the following methods:
-   - **Sequentially:** Run the scripts in numerical order (e.g., `Script1`, `Script2`, `Script3`, ...). You can either open each script directly in R or use `runner.R`, which provides a convenient way to execute one script at a time.
+   - **Sequentially:** Run the scripts in numerical order (e.g., `Script1_3...`, `Script4...`,...). You can either open each script directly in R or use `runner.R`, which provides a convenient way to execute one script at a time.
    - **As a batch:** Use `run_all.R` to execute all scripts automatically. Alternatively, you can configure `run_all.R` to run only a selected range of scripts (e.g., from Script *i* to Script *j*).
