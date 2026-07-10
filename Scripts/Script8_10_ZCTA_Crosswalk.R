@@ -341,6 +341,11 @@ cat("\nDone. Total block-pop records pulled:", nrow(all_blocks_pop), "\n")
 cat("Total population covered:", sum(all_blocks_pop$value), "\n")
 
 
+# ── 5. Save all bafs and all block pop files ──────────────
+
+saveRDS(all_bafs, file.path(processed_dir, "all_bafs.rds"))
+saveRDS(all_blocks_pop, file.path(processed_dir, "all_blocks_pop.rds"))
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SCRIPT 09: Build ZCTA-to-2026-CD crosswalk for redistricted states
 #
