@@ -32,6 +32,7 @@
 #   - pums_crosswalked (in-memory from Script 10; used for alignment check)
 #
 # Output:
+#   - cd119_to_cd2026 (Renumbering map. For each old (119th Congress / 2024) CD in the 7 redistricted states, which 2026 CD does most of its population now live in?)
 #   - ces_with_cd_v2.rds (CES with corrected cd_2026 for fallback respondents)
 #
 # Sections (12A — build the map):
@@ -163,7 +164,7 @@ cd119_to_cd2026 <- cd_renumber_map %>%
   select(state_fips, cd_119, cd_2026, overlap_pct, overlap_pop, cd_119_total_pop)
 
 
-# ── 5. Diagnostics ──────────────────────────────────────────────────────────
+# ── 5. Diagnostics and save──────────────────────────────────────────────────────────
 
 cat("\n══ Renumbering map (CD119 -> CD2026 by max population overlap) ══\n")
 print(cd119_to_cd2026, n = Inf)
@@ -173,6 +174,8 @@ cd119_to_cd2026 %>%
   filter(overlap_pct < 90) %>%
   print(n = Inf)
 
+#Save the renumbering map
+saveRDS(cd119_to_cd2026, file.path(processed_dir, "cd119_to_cd2026.rds"))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SCRIPT 12B: Apply renumbering map to fallback respondents
