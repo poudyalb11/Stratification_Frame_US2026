@@ -55,7 +55,42 @@ library(data.table)
 # SCRIPT 12A: Build CD119 → CD2026 renumbering map
 # ══════════════════════════════════════════════════════════════════════════════
 
-# ── 1. Load and inspect NationalCD119 BAF ───────────────────────────────────
+# ── 1. Load files and inspect NationalCD119 BAF ───────────────────────────────────
+
+library(here)
+library(tidyverse)
+library(data.table)
+
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
+
+# ── Load inputs from disk if not already in memory ──────────────────────────
+if (!exists("all_bafs")) {
+  all_bafs <- readRDS(file.path(processed_dir, "all_bafs.rds"))
+}
+
+if (!exists("all_blocks_pop")) {
+  all_blocks_pop <- readRDS(file.path(processed_dir, "all_blocks_pop.rds"))
+}
+
+if (!exists("zcta_cd_crosswalk")) {
+  zcta_cd_crosswalk <- readRDS(file.path(processed_dir, "zcta_cd_crosswalk_redistricted.rds"))
+}
+
+if (!exists("ces_with_cd")) {
+  ces_with_cd <- readRDS(file.path(processed_dir, "ces_harmonized.rds"))
+}
+
+if (!exists("pums_crosswalked")) {
+  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
+}
+
+# ── Load NationalCD119 BAF ──────────────────────────────────────────────────
+cd119_baf <- fread(
+  file.path(raw_dir, "NationalCD119.txt"),
+  colClasses = list(character = 1:2)
+)
 # Each row maps a 2020 Census block (GEOID) to its 119th Congress CD (CDFP).
 
 cd119_baf <- fread(
@@ -230,14 +265,5 @@ cat("CDs in PUMS but not in CES:",
     nrow(anti_join(pums_combos, ces_combos, by = c("state_cat", "cd_cat"))), "\n")
 
 
-# Save checkpoint
-saveRDS(ces_with_cd,
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds")
-
-cat("\nSaved ces_with_cd_v2\n")
-cat("File size:",
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds") / 1e6, 2),
-    "MB\n")
-cat("Rows:                ", nrow(ces_with_cd), "\n")
-cat("Unique respondents:  ", n_distinct(ces_with_cd$caseid), "\n")
-cat("Columns:             ", ncol(ces_with_cd), "\n")
+# Save ces_with_cd_v2 (the CES with corrected cd_2026 for fallback respondents)
+saveRDS(ces_with_cd, file.path(processed_dir, "ces_with_cd_v2.rds"))
