@@ -100,13 +100,18 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 library(tidyverse)
-
+library(here)
 
 # ── 1. Load CES and diagnostic on vote-related columns ──────────────────────
 
-ces_with_cd_v2 <- readRDS(
-  "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds"
-)
+
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
+
+# ── Load inputs from disk ──────────────────────────
+
+ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
 
 cat("Loaded CES:", nrow(ces_with_cd_v2), "rows x", ncol(ces_with_cd_v2), "cols\n")
 cat("Unique respondents:", n_distinct(ces_with_cd_v2$caseid), "\n\n")
@@ -290,10 +295,7 @@ ces_with_cd_v2 %>%
 
 # ── 7. Save ─────────────────────────────────────────────────────────────────
 
-saveRDS(ces_with_cd_v2,
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds")
+#Overwrite ces_with_cd_v2
+saveRDS(ces_with_cd_v2, file.path(processed_dir, "ces_with_cd_v2.rds"))
 
 cat("\nSaved ces_with_cd_v2 with vote_2024 column\n")
-cat("File size:",
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_with_cd_v2.rds") / 1e6, 2),
-    "MB\n")
