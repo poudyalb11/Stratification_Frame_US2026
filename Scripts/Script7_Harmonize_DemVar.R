@@ -26,7 +26,20 @@
 #   - All variables categorical; categories must match the stratification frame
 # ══════════════════════════════════════════════════════════════════════════════
 
+library(here)
 library(tidyverse)
+
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
+
+# Load inputs if not already in memory
+if (!exists("pums_crosswalked")) {
+  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked.rds"))
+}
+
+if (!exists("ces")) {
+  ces <- read_csv(file.path(raw_dir, "CCES24_Common_OUTPUT_vv_topost_final.csv"))
+}
 
 
 # ── 1. AGE → age_cat ─────────────────────────────────────────────────────────
@@ -416,9 +429,7 @@ ces %>%
   print()
 
 # ── 6. Save harmonized datasets ──────────────────────────────────────────────
-saveRDS(pums_crosswalked, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked_harmonized.rds")
-saveRDS(ces, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_harmonized.rds")
+saveRDS(pums_crosswalked, file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
+saveRDS(ces, file.path(processed_dir, "ces_harmonized.rds"))
 
 cat("Harmonization complete. Saved harmonized datasets.\n")
