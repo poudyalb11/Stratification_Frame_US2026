@@ -98,7 +98,12 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+library(here)
 library(tidyverse)
+
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
 
 
 # ── 1. Build block-level table: state, cd_2026, cd_119, pop ─────────────────
@@ -107,7 +112,22 @@ library(tidyverse)
 #   all_bafs              -- block → cd_2026 (and state_fips)
 #   cd119_redistricted    -- block → cd_119
 #   all_blocks_pop        -- block → 2020 population
-#
+
+
+# ── Guarded input loads ─────────────────────────────────────────────────────
+if (!exists("all_bafs")) {
+  all_bafs <- readRDS(file.path(processed_dir, "all_bafs.rds"))
+}
+if (!exists("cd119_redistricted")) {
+  cd119_redistricted <- readRDS(file.path(processed_dir, "cd119_redistricted.rds"))
+}
+if (!exists("all_blocks_pop")) {
+  all_blocks_pop <- readRDS(file.path(processed_dir, "all_blocks_pop.rds"))
+}
+
+
+
+
 # Inner joins drop blocks not in all three (very few, e.g. uninhabited
 # blocks that may have CD assignments but no population, etc.)
 
@@ -259,8 +279,8 @@ print(summary(abs(symmetry_check$forward_overlap_pct - symmetry_check$reverse_ov
 
 # ── 6. Save ────────────────────────────────────────────────────────────────
 
-saveRDS(cd_2026_inheritance,
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/cd_2026_inheritance.rds")
+saveRDS(cd_2026_inheritance, file.path(processed_dir, "cd_2026_inheritance.rds"))
+
 
 cat("\nSaved cd_2026_inheritance.rds\n")
 
@@ -324,21 +344,19 @@ library(tidyverse)
 
 # ── 1. Load source tables if not in memory ──────────────────────────────────
 
-base_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
-
 if (!exists("cd_demographics")) {
   cat("Loading cd_demographics from disk...\n")
-  cd_demographics <- readRDS(paste0(base_path, "cd_demographics.rds"))
+  cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
 }
 
 if (!exists("cd_house_2024")) {
   cat("Loading cd_house_2024 from disk...\n")
-  cd_house_2024 <- readRDS(paste0(base_path, "cd_house_2024.rds"))
+  cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
 }
 
 if (!exists("state_pres_2024")) {
   cat("Loading state_pres_2024 from disk...\n")
-  state_pres_2024 <- readRDS(paste0(base_path, "state_pres_2024.rds"))
+  state_pres_2024 <- readRDS(file.path(processed_dir, "state_pres_2024.rds"))
 }
 
 cat("\n══ Input tables loaded ══\n")
@@ -485,7 +503,8 @@ if (nrow(na_counts) == 0) {
 
 # ── 8. Save ─────────────────────────────────────────────────────────────────
 
-saveRDS(training_table, paste0(base_path, "training_table.rds"))
+saveRDS(training_table, file.path(processed_dir, "training_table.rds"))
+
 
 cat("\nSaved training_table.rds (base version)\n")
 cat("Next: Script 18C adds contestation flag + refines is_redistricted based\n")
@@ -537,22 +556,22 @@ library(tidyverse)
 
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
-base_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
 
 if (!exists("training_table")) {
   cat("Loading training_table from disk...\n")
-  training_table <- readRDS(paste0(base_path, "training_table.rds"))
+  training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
 }
 
 if (!exists("cd_house_2024")) {
   cat("Loading cd_house_2024 from disk...\n")
-  cd_house_2024 <- readRDS(paste0(base_path, "cd_house_2024.rds"))
+  cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
 }
 
 if (!exists("cd_2026_inheritance")) {
   cat("Loading cd_2026_inheritance from disk...\n")
-  cd_2026_inheritance <- readRDS(paste0(base_path, "cd_2026_inheritance.rds"))
+  cd_2026_inheritance <- readRDS(file.path(processed_dir, "cd_2026_inheritance.rds"))
 }
+
 
 cat("══ Inputs loaded ══\n")
 cat("training_table:        ", nrow(training_table),       "rows\n")
@@ -684,7 +703,7 @@ training_table %>%
 
 # ── 7. Save ────────────────────────────────────────────────────────────────
 
-saveRDS(training_table, paste0(base_path, "training_table.rds"))
+saveRDS(training_table, file.path(processed_dir, "training_table.rds"))
 
 cat("\nSaved training_table.rds with:\n")
 cat("  - refined is_redistricted (essentially-unchanged CDs → FALSE)\n")
