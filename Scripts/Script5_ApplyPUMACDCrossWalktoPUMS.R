@@ -44,17 +44,19 @@
 #   - The output is large (~320 MB RDS); CSV would be ~1.5-2 GB
 # ══════════════════════════════════════════════════════════════════════════════
 
+
+library(here)
 library(tidyverse)
 
+# ── Folder paths ────────────────────────────────────────────────────────────
+processed_dir <- here("Data_Processed")
+
+# ── Load inputs ──────────────────────────────────────────────────────────────
 # Read cleaned PUMS file
-pums_clean <- readRDS(
-  "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_clean.rds"
-)
+pums_clean <- readRDS(file.path(processed_dir, "pums_clean.rds"))
 
 # Read unified crosswalk (Geocorr + redistricted states)
-unified_crosswalk <- readRDS(
-  "/Users/binampoudyal/Downloads/unified_crosswalk_2026.rds"
-)
+unified_crosswalk <- readRDS(file.path(processed_dir, "unified_crosswalk_2026.rds"))
 
 
 # ── 1. Join pums_clean to unified crosswalk ──────────────────────────────────
@@ -129,13 +131,10 @@ cat("Dimensions:", nrow(pums_crosswalked), "rows x",
 cat("Ready for cell aggregation.\n")
 
 
-
 # Save
-saveRDS(pums_crosswalked, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked.rds")
-
+saveRDS(pums_crosswalked, file.path(processed_dir, "pums_crosswalked.rds"))
 
 cat("Saved successfully.\n")
 cat("RDS File size:", 
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked.rds") / 1e6, 1), 
+    round(file.size(file.path(processed_dir, "pums_crosswalked.rds")) / 1e6, 1), 
     "MB\n")
