@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# SCRIPT 6: Initial Exploration
+# SCRIPT 6: Initial Exploration of the crosswalked PUMS and CES file
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -7,8 +7,14 @@
 # STAGE 1: Some initial exploration of the crosswalked PUMS FILE
 # ══════════════════════════════════════════════════════════════════════════════
 
-pums_crosswalked <- readRDS("/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked.rds")
+library(here)
+library(tidyverse)
 
+processed_dir <- here("Data_Processed")
+
+if (!exists("pums_crosswalked")) {
+  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked.rds"))
+}
 # ── Check overlap between hispanic_flag and race_detailed ─────────────────────
 
 # 1. Does race_detailed have explicit Hispanic categories?
@@ -133,8 +139,8 @@ pums_crosswalked %>%
 
 
 ## ══════════════════════════════════════════════════════════════════════════════
-# STAGE 2: Some initial exploration of the crosswalked PUMS FILE
-# Purpose: Load the CES cumulative file and inventory its variables,
+# STAGE 2: Some initial exploration of the CES common post file
+# Purpose: Load the CES common post file and inventory its variables,
 #          types, and category distributions before deciding what to use
 #          for the modeling stages.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -142,9 +148,9 @@ pums_crosswalked %>%
 library(tidyverse)
 
 # ── 1. Read CES file ──────────────────────────────────────────────────────────
-ces_path <- "/Users/binampoudyal/Downloads/dataverse_files/CCES24_Common_OUTPUT_vv_topost_final.csv"  # UPDATE PATH
+raw_dir <- here("Data_Raw")
 
-ces <- read_csv(ces_path)
+ces <- read_csv(file.path(raw_dir, "CCES24_Common_OUTPUT_vv_topost_final.csv"))
 
 
 # ── 2. Top-level dimensions ──────────────────────────────────────────────────
