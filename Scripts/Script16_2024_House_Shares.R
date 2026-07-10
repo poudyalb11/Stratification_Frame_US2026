@@ -95,8 +95,12 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+library(here)
 library(tidyverse)
 library(data.table)
+
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
 
 # ── 1. Investigate data ────────────────────────────
 
