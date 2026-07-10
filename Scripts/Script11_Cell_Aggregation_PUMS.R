@@ -35,9 +35,15 @@
 library(tidyverse)
 
 # ── 1. Load harmonized PUMS from disk ────────────────────────────────────────
-pums_frame <- readRDS(
-  "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked_harmonized.rds"
-)
+
+
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
+
+# ── Load harmonized pums crosswalk file ─────────────────────────────────────────────────────
+
+pums_frame <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
 
 cat("══ Loaded PUMS ══\n")
 cat("Rows:", nrow(pums_frame), "\n")
@@ -102,10 +108,6 @@ cat("Cells with cell_pop < 100:  ", sum(pums_demographic_cells$cell_pop < 100), 
 
 
 # ── 5. Save the poststratification frame ─────────────────────────────────────
-saveRDS(pums_demographic_cells, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_demographic_cells.rds")
+saveRDS(pums_demographic_cells, file.path(processed_dir, "pums_demographic_cells.rds"))
 
-cat("\nSaved poststratification frame\n")
-cat("File size:", 
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_demographic_cells.rds") / 1e6, 2), 
-    "MB\n")
+cat("\nSaved pums demographic cells frame\n")
