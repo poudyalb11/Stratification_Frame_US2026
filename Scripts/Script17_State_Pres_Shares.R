@@ -58,23 +58,29 @@
 #   9. Save
 # ══════════════════════════════════════════════════════════════════════════════
 
+library(here)
 library(tidyverse)
+
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
 
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
 base_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
 
+# ── 1. Load inputs ──────────────────────────────────────────────────────────
+
 # Reload pres_raw if not in memory
 if (!exists("pres_raw")) {
   cat("pres_raw not in memory -- loading from disk...\n")
-  pres_raw <- read_csv("/Users/binampoudyal/Downloads/1976-2024-president.csv",
+  pres_raw <- read_csv(file.path(raw_dir, "1976-2024-president.csv"),
                        show_col_types = FALSE)
 }
 
 # Reload cd_demographics if not in memory
 if (!exists("cd_demographics")) {
   cat("cd_demographics not in memory -- loading from disk...\n")
-  cd_demographics <- readRDS(paste0(base_path, "cd_demographics.rds"))
+  cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
 }
 
 cat("══ Inputs loaded ══\n")
@@ -225,8 +231,7 @@ state_pres_2024 %>%
 
 
 # ── 9. Save ─────────────────────────────────────────────────────────────────
-
-saveRDS(state_pres_2024, paste0(base_path, "state_pres_2024.rds"))
+saveRDS(state_pres_2024, file.path(processed_dir, "state_pres_2024.rds"))
 
 cat("\nSaved state_pres_2024.rds with 4-feature shares (VAP denominator)\n")
 cat("\nFinal columns:\n")
