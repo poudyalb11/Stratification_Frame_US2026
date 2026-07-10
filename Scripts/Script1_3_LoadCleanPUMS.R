@@ -1,8 +1,11 @@
 library(tidyverse)
 library(data.table)
-library(ipumsr)
 library(janitor)
 library(haven)
+library(here)
+library(ipumsr)
+library(dplyr)
+library(tidyr)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SCRIPT 01: Load IPUMS PUMS extract and run initial diagnostics
@@ -47,10 +50,6 @@ library(haven)
 #   "Variable groupings and methodology decisions" document for details
 #   on how each is collapsed in Script 03.
 # ══════════════════════════════════════════════════════════════════════════════
-library(here)
-library(ipumsr)
-library(dplyr)
-library(tidyr)
 
 # ── Folder paths ────────────────────────────────────────────────────────────
 raw_dir       <- here("Data_Raw")
