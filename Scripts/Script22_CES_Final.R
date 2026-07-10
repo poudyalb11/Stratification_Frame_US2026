@@ -6,23 +6,25 @@
 #   the columns needed by the MrsP multinomial regression + weighting:
 #   respondent id, weights, demographics, geography, and vote_2024.
 #
-# Deliverables (in deliverables_for_mrsp/):
+# Deliverables (in Data_Final/):
 #   - ces_2024_for_mrsp.csv
 #   - ces_2024_for_mrsp.rds
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+library(here)
 library(tidyverse)
 
-base_path  <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
-output_dir <- paste0(base_path, "deliverables_for_mrsp/")
-
-dir.create(output_dir, showWarnings = FALSE)
+# ── Folder paths ────────────────────────────────────────────────────────────
+processed_dir <- here("Data_Processed")
+final_dir     <- here("Data_Final")
 
 
 # ── 1. Load and select columns ──────────────────────────────────────────────
 
-ces <- readRDS(paste0(base_path, "ces_with_cd_v2.rds"))
+if (!exists("ces")) {
+  ces <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
+}
 
 wanted_cols <- c(
   "caseid",
@@ -94,12 +96,10 @@ print(colSums(is.na(ces_clean)))
 
 # ── 3. Save ─────────────────────────────────────────────────────────────────
 
-write_csv(ces_clean,
-          paste0(output_dir, "ces_2024_for_mrsp.csv"))
-saveRDS(ces_clean,
-        paste0(output_dir, "ces_2024_for_mrsp.rds"))
+write_csv(ces_clean, file.path(final_dir, "ces_2024_for_mrsp.csv"))
+saveRDS(ces_clean,   file.path(final_dir, "ces_2024_for_mrsp.rds"))
 
 cat("\nSaved ces_2024_for_mrsp.csv and .rds\n")
 cat("File size (CSV):",
-    round(file.info(paste0(output_dir, "ces_2024_for_mrsp.csv"))$size / 1e6, 2),
+    round(file.info(file.path(final_dir, "ces_2024_for_mrsp.csv"))$size / 1e6, 2),
     "MB\n")
