@@ -53,10 +53,18 @@ processed_dir <- here("Data_Processed")
 
 # ── Load inputs ──────────────────────────────────────────────────────────────
 # Read cleaned PUMS file
-pums_clean <- readRDS(file.path(processed_dir, "pums_clean.rds"))
+library(here)
+library(tidyverse)
 
-# Read unified crosswalk (Geocorr + redistricted states)
-unified_crosswalk <- readRDS(file.path(processed_dir, "unified_crosswalk_2026.rds"))
+processed_dir <- here("Data_Processed")
+
+# Load inputs (from disk if not already in memory)
+if (!exists("pums_clean")) {
+  pums_clean <- readRDS(file.path(processed_dir, "pums_clean.rds"))
+}
+if (!exists("unified_crosswalk")) {
+  unified_crosswalk <- readRDS(file.path(processed_dir, "unified_crosswalk_2026.rds"))
+}
 
 
 # ── 1. Join pums_clean to unified crosswalk ──────────────────────────────────
