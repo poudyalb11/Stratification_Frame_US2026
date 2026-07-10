@@ -67,9 +67,28 @@
 #   - Identification of unusual CD codes (0, 98, 99) and at-large states
 #   - Distribution of near-zero afact rows
 # ══════════════════════════════════════════════════════════════════════════════
+library(here)
+library(tidyverse)
+library(tidycensus)
+library(readxl)
+library(readr)
+
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
+
+# ── File paths ──────────────────────────────────────────────────────────────
+tract_to_puma_path <- file.path(raw_dir, "2020_Census_Tract_to_2020_PUMA.txt")
+geo_path           <- file.path(raw_dir, "geocorr2022_2610104623.csv")
+
+# ── Census API setup ────────────────────────────────────────────────────────
+# Set your Census API key in your .Renviron file (do NOT commit it here).
+# Get one free at: https://api.census.gov/data/key_signup.html
+# Then run once: census_api_key("YOUR_KEY", install = TRUE, overwrite = TRUE)
+readRenviron("~/.Renviron")
+
 #-- 1. Loading geocorr data ----------------------------------------------
 # ── Read description row first ────────────────────────────────────────────────
-geo_path  <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/geocorr2022_2610104623.csv" #path to crosswalk file
 crosswalk_desc <- read_csv(geo_path, n_max = 1) 
 cat("Column descriptions:\n")
 print(crosswalk_desc)
@@ -81,7 +100,6 @@ cat("\nColumn names:\n")
 print(names(crosswalk_raw))
 cat("\nFirst 10 rows:\n")
 print(head(crosswalk_raw, 10))
-
 
 
 # ── 2. Rename columns to clean short names ────────────────────────────────────
@@ -273,8 +291,7 @@ cat("Rows remaining after afact >= 0.001:", sum(crosswalk$afact >= 0.001), "\n")
 library(tidyverse)
 library(readr)
 #Census Tract to 2020 PUMA relationship file for all states
-X2020_Census_Tract_to_2020_PUMA <- read_csv("/Users/binampoudyal/Downloads/rstudio-export/2020_Census_Tract_to_2020_PUMA.txt")
-tract_to_puma <- X2020_Census_Tract_to_2020_PUMA
+tract_to_puma <- read_csv(tract_to_puma_path)
 
 tract_to_puma_clean <- tract_to_puma %>%
   mutate(tract_geoid = paste0(STATEFP, COUNTYFP, TRACTCE)) %>%
@@ -513,74 +530,74 @@ build_state_puma_cd_crosswalk <- function(
 
 ###Texas
 tx_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path         = "/Users/binampoudyal/Downloads/rstudio-export/PLANC2333.csv",
+  baf_path         = file.path(raw_dir, "PLANC2333.csv"),
   state_abb        = "TX",
   state_fips       = "48",
   baf_block_col    = "SCTBKEY",
   baf_district_col = "DISTRICT",
-  output_dir       = "/Users/binampoudyal/Downloads"
+  output_dir       = processed_dir
 )
 
 
 ###California 
 ca_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path        = "/Users/binampoudyal/Downloads/ab604.csv",
+  baf_path        = file.path(raw_dir, "ab604.csv"),
   state_abb       = "CA",
   state_fips      = "06",
-  baf_delim       = ",",           # comma-separated
-  baf_has_header  = FALSE,         # no header row
-  output_dir      = "/Users/binampoudyal/Downloads/"
+  baf_delim       = ",",
+  baf_has_header  = FALSE,
+  output_dir      = processed_dir
 )
 
 ###Missouri
 mo_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path        = "/Users/binampoudyal/Downloads/HB1_Missouri_Congressional_Districts_2025_BEF.xlsx",  # update path
-  state_abb       = "MO",
-  state_fips      = "29",
-  baf_block_col   = "Block",
+  baf_path         = file.path(raw_dir, "HB1_Missouri_Congressional_Districts_2025_BEF.xlsx"),
+  state_abb        = "MO",
+  state_fips       = "29",
+  baf_block_col    = "Block",
   baf_district_col = "DistrictID",
-  output_dir      = "/Users/binampoudyal/Downloads"
+  output_dir       = processed_dir
 )
 
 ###North Carolina
 nc_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path        = "/Users/binampoudyal/Downloads/NCGA_CCM-2 .csv",  # update path
-  state_abb       = "NC",
-  state_fips      = "37",
-  baf_block_col   = "Block",
+  baf_path         = file.path(raw_dir, "NCGA_CCM-2 .csv"),   # note the trailing space
+  state_abb        = "NC",
+  state_fips       = "37",
+  baf_block_col    = "Block",
   baf_district_col = "District",
-  output_dir      = "/Users/binampoudyal/Downloads"
+  output_dir       = processed_dir
 )
 
 #Ohio
 oh_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path         = "/Users/binampoudyal/Downloads/October 31 2025 CD BAF.xlsx",
+  baf_path         = file.path(raw_dir, "October 31 2025 CD BAF.xlsx"),
   state_abb        = "OH",
   state_fips       = "39",
   baf_block_col    = "Block",
   baf_district_col = "DistrictID:1",
-  output_dir       = "/Users/binampoudyal/Downloads"
+  output_dir       = processed_dir
 )
 
 #Utah
-utah_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path         = "/Users/binampoudyal/Downloads/ut_cong_adopted_2025_baf.csv",
+ut_puma_cd <- build_state_puma_cd_crosswalk(  # renamed from utah_puma_cd for consistency
+  baf_path         = file.path(raw_dir, "ut_cong_adopted_2025_baf.csv"),
   state_abb        = "UT",
   state_fips       = "49",
   baf_block_col    = "GEOID20",
   baf_district_col = "DISTRICT",
-  output_dir       = "/Users/binampoudyal/Downloads"
+  output_dir       = processed_dir
 )
 
 #Florida
-florida_puma_cd <- build_state_puma_cd_crosswalk(
-  baf_path         = "/Users/binampoudyal/Downloads/EOGPCRP2026.csv",
+fl_puma_cd <- build_state_puma_cd_crosswalk(  # renamed from florida_puma_cd for consistency
+  baf_path         = file.path(raw_dir, "EOGPCRP2026.csv"),
   state_abb        = "FL",
   state_fips       = "12",
   baf_block_col    = "block_geoid",
   baf_district_col = "district",
   baf_has_header   = FALSE,
-  output_dir       = "/Users/binampoudyal/Downloads"
+  output_dir       = processed_dir
 )
 
 
@@ -630,13 +647,13 @@ florida_puma_cd <- build_state_puma_cd_crosswalk(
 # ══════════════════════════════════════════════════════════════════════════════
 
 # Load all 7 state-specific crosswalks
-tx_xw  <- readRDS("/Users/binampoudyal/Downloads/tx_puma_cd_crosswalk.rds")
-ca_xw  <- readRDS("/Users/binampoudyal/Downloads/ca_puma_cd_crosswalk.rds")
-mo_xw  <- readRDS("/Users/binampoudyal/Downloads/mo_puma_cd_crosswalk.rds")
-nc_xw  <- readRDS("/Users/binampoudyal/Downloads/nc_puma_cd_crosswalk.rds")
-oh_xw  <- readRDS("/Users/binampoudyal/Downloads/oh_puma_cd_crosswalk.rds")
-ut_xw  <- readRDS("/Users/binampoudyal/Downloads/ut_puma_cd_crosswalk.rds")
-fl_xw  <- readRDS("/Users/binampoudyal/Downloads/fl_puma_cd_crosswalk.rds")
+tx_xw <- readRDS(file.path(processed_dir, "tx_puma_cd_crosswalk.rds"))
+ca_xw <- readRDS(file.path(processed_dir, "ca_puma_cd_crosswalk.rds"))
+mo_xw <- readRDS(file.path(processed_dir, "mo_puma_cd_crosswalk.rds"))
+nc_xw <- readRDS(file.path(processed_dir, "nc_puma_cd_crosswalk.rds"))
+oh_xw <- readRDS(file.path(processed_dir, "oh_puma_cd_crosswalk.rds"))
+ut_xw <- readRDS(file.path(processed_dir, "ut_puma_cd_crosswalk.rds"))
+fl_xw <- readRDS(file.path(processed_dir, "fl_puma_cd_crosswalk.rds"))
 
 # Standardise the new state crosswalks to match Geocorr structure
 new_states <- bind_rows(tx_xw, ca_xw, mo_xw, nc_xw, oh_xw, ut_xw, fl_xw) %>%
@@ -696,5 +713,4 @@ unified_crosswalk <- unified_crosswalk %>%
   rename(cd_2026 = cd119)
 
 # Save
-saveRDS(unified_crosswalk, 
-        "/Users/binampoudyal/Downloads/unified_crosswalk_2026.rds")
+saveRDS(unified_crosswalk, file.path(processed_dir, "unified_crosswalk_2026.rds"))
