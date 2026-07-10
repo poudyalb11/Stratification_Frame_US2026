@@ -51,14 +51,17 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+library(here)
 library(tidyverse)
 library(rpart)
 library(rpart.plot)
 
 
-# Shared constants for all three scripts
-base_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
+# ── Folder paths ────────────────────────────────────────────────────────────
+processed_dir <- here("Data_Processed")
 
+
+# Shared constants for all three scripts
 control_params <- rpart.control(cp = 0, minsplit = 3, minbucket = 1)
 
 non_predictors_common <- c("state_cd", "state_abbrv", "cd_pop",
@@ -67,7 +70,7 @@ non_predictors_common <- c("state_cd", "state_abbrv", "cd_pop",
 
 # Load shared input once
 if (!exists("training_table")) {
-  training_table <- readRDS(paste0(base_path, "training_table.rds"))
+  training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -213,22 +216,21 @@ plot_prediction <- function(model, actual, outcome_label, filename) {
   cat("Saved:", filename, "\n")
 }
 
-output_dir <- paste0(base_path, "prediction_plots/")
-if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+plots_dir <- file.path(processed_dir, "Prediction_Plots")
+if (!dir.exists(plots_dir)) dir.create(plots_dir, recursive = TRUE)
 
 plot_prediction(trees$dem, training_set$dem_share, "dem_share",
-                paste0(output_dir, "dem_predictions_plot.png"))
+                file.path(plots_dir, "dem_predictions_plot.png"))
 plot_prediction(trees$rep, training_set$rep_share, "rep_share",
-                paste0(output_dir, "rep_predictions_plot.png"))
+                file.path(plots_dir, "rep_predictions_plot.png"))
 plot_prediction(trees$other, training_set$other_share, "other_share",
-                paste0(output_dir, "other_predictions_plot.png"))
+                file.path(plots_dir, "other_predictions_plot.png"))
 plot_prediction(trees$no_vote, training_set$no_vote_share, "no_vote_share",
-                paste0(output_dir, "no_vote_predictions_plot.png"))
-
-
+                file.path(plots_dir, "no_vote_predictions_plot.png"))
+cat("Prediction plots saved to:", plots_dir, "\n")
 # ── 5. Save trees.rds ───────────────────────────────────────────────────────
 
-saveRDS(trees, paste0(base_path, "trees.rds"))
+saveRDS(trees, file.path(processed_dir, "trees.rds"))
 
 cat("\nSaved trees.rds\n")
 cat("Contains: dem, rep, other, no_vote (rpart models)\n")
@@ -417,11 +419,11 @@ cat("no_vote:", round(r2(holdout$no_vote_share, holdout_preds$pred_no_vote), 4),
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
 if (!exists("training_table")) {
-  training_table <- readRDS(paste0(base_path, "training_table.rds"))
+  training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
 }
 
 if (!exists("trees")) {
-  trees <- readRDS(paste0(base_path, "trees.rds"))
+  trees <- readRDS(file.path(processed_dir, "trees.rds"))
 }
 
 cat("Loaded training_table:", nrow(training_table), "rows\n")
@@ -494,8 +496,7 @@ print(simplex_sums)
 
 # ── 6. Save training_table_v2.rds ───────────────────────────────────────────
 
-saveRDS(training_table_v2, paste0(base_path, "training_table_v2.rds"))
-
+saveRDS(training_table_v2, file.path(processed_dir, "training_table_v2.rds"))
 cat("\nSaved training_table_v2.rds (", nrow(training_table_v2), "CDs)\n")
 cat("Columns:", paste(names(training_table_v2), collapse = ", "), "\n")
 
