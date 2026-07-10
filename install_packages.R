@@ -11,6 +11,7 @@ packages <- c(
   "tidycensus",      # querying Census API for block populations
   "rpart",           # CART models
   "rpart.plot"       # CART visualization
+  "janitor"
 )
 
 # Install missing packages
