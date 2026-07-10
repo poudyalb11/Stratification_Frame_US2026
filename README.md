@@ -7,4 +7,6 @@ Research project at the AI Pop Up Lab, University of Amsterdam.
 1. Clone this repo
 2. Download raw data from Zenodo https://zenodo.org/records/21285306, and extract to `Data_Raw/`
 3. Install required R packages: by running `source("install_packages.R")` in R
-4. Run scripts in the Scripts folder in numeric order (Script1_3, Script4, ...), or run them as a batch (using run_all.R file -- within which you can either run all scripts at once or optionally run a subset from Script i to Script j)
+4. Run script files in the Scripts folder in:
+         * numeric order (Script1_3, Script4, ...) . For this, you can either directly open the scripts, or use the runner.R file which makes it               convenient to call each script file at a time
+         * run them as a batch (using run_all.R file -- within which you can either run all scripts at once or optionally run a subset from Script             i to Script j)
