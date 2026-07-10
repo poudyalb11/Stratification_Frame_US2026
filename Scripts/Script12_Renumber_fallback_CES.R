@@ -94,10 +94,6 @@ cd119_baf <- fread(
 )
 # Each row maps a 2020 Census block (GEOID) to its 119th Congress CD (CDFP).
 
-cd119_baf <- fread(
-  "/Users/binampoudyal/Downloads/Stratification_Frame_Building/NationalCD119.txt",
-  colClasses = list(character = 1:2)  # preserve leading zeros
-)
 
 cat("══ NationalCD119 BAF ══\n")
 cat("Rows:", nrow(cd119_baf), "\n")
@@ -106,7 +102,7 @@ cat("First 5 rows:\n")
 print(head(cd119_baf, 5))
 
 
-# ── 2. Filter to redistricted states; standardize columns ───────────────────
+# ── 2. Filter to redistricted states; standardize columns and save ───────────────────
 # Only the 7 redistricted states need renumbering. Drop "ZZ" entries
 # (uninhabited blocks with no CD assignment).
 
@@ -174,6 +170,8 @@ cd119_to_cd2026 %>%
   filter(overlap_pct < 90) %>%
   print(n = Inf)
 
+#Save the block -> cd119 file for redistricted districts
+saveRDS(cd119_redistricted, file.path(processed_dir, "cd119_redistricted.rds"))
 #Save the renumbering map
 saveRDS(cd119_to_cd2026, file.path(processed_dir, "cd119_to_cd2026.rds"))
 
