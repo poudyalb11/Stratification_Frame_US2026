@@ -101,14 +101,15 @@ library(data.table)
 # ── 1. Investigate data ────────────────────────────
 
 # Quick look at the codebook to confirm column names and codes
-codebook_path <- "/Users/binampoudyal/Downloads/dataverse_files_house_votes_actual/codebook-us-house-1976–2024.md"
-
+codebook_path <- file.path(raw_dir, "codebook-us-house-1976–2024.md")
+cat("══ Codebook contents ══\n")
+cat(readLines(codebook_path), sep = "\n")
 cat("══ Codebook contents ══\n")
 cat(readLines(codebook_path), sep = "\n")
 
 #data containing house vote shares at the congressional district level from 1979 to 2024
 house_raw <- fread(
-  "/Users/binampoudyal/Downloads/dataverse_files_house_votes_actual/1976-2024-house.tab",
+  file.path(raw_dir, "1976-2024-house.tab"),
   sep = ","
 )
 
@@ -343,13 +344,11 @@ cd_house_2024 %>%
 
 # ── 10. Save ─────────────────────────────────────────────────────────────────
 
-saveRDS(cd_house_2024,
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/cd_house_2024.rds")
+#Intermediate save
+saveRDS(cd_house_2024, file.path(processed_dir, "cd_house_2024.rds"))
 
 cat("\nSaved cd_house_2024.rds\n")
-cat("File size:",
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/cd_house_2024.rds") / 1e6, 2),
-    "MB\n")
+
 
 #Edge cases diagnostic
 cat("══ Potential training-data issues ══\n\n")
@@ -411,12 +410,17 @@ library(tidyverse)
 
 
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
-# Both files should already exist from earlier scripts.
+# 
 
-base_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
+# cd_house_2024 should already exist from the above script
+if (!exists("cd_house_2024")) {
+  cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
+}
 
-cd_house_2024   <- readRDS(paste0(base_path, "cd_house_2024.rds"))
-cd_demographics <- readRDS(paste0(base_path, "cd_demographics.rds"))
+# Load cd_demographics if not in memory (needed for Script 16B)
+if (!exists("cd_demographics")) {
+  cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
+}
 
 cat("══ Inputs loaded ══\n")
 cat("cd_house_2024 rows:  ", nrow(cd_house_2024),   "(expect 435)\n")
@@ -478,7 +482,8 @@ cd_house_2024 %>%
 
 # ── 5. Save updated cd_house_2024 ──────────────────────────────────────────
 
-saveRDS(cd_house_2024, paste0(base_path, "cd_house_2024.rds"))
+#Overwrite
+saveRDS(cd_house_2024, file.path(processed_dir, "cd_house_2024.rds"))
 
 cat("\nSaved cd_house_2024.rds with 4-way shares (cd_pop denominator)\n")
 cat("Final columns:\n")
