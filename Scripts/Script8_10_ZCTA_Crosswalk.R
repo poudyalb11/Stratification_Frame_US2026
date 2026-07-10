@@ -27,15 +27,25 @@
 #   4. Load ZCTA-block relationship file and block populations
 # ══════════════════════════════════════════════════════════════════════════════
 
+
+library(here)
 library(tidyverse)
 library(readxl)
 library(readr)
 library(data.table)
 library(tidycensus)
 
-# Load harmonized CES from Script 07
-ces <- readRDS("/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_harmonized.rds")
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
 
+# ── Load harmonized CES ─────────────────────────────────────────────────────
+
+ces <- readRDS(file.path(processed_dir, "ces_harmonized.rds"))
+
+
+# ── Census API setup ────────────────────────────────────────────────────────
+readRenviron("~/.Renviron")
 
 # ── 1. CES geographic identifier audit ──────────────────────────────────────
 
@@ -72,38 +82,45 @@ cat("countyfips NAs:", sum(is.na(ces$countyfips)), "\n")
 
 # ── 2. Load and combine BAFs from 7 redistricted states ─────────────────────
 
-tx_baf <- read_csv("/Users/binampoudyal/Downloads/rstudio-export/PLANC2333.csv",
+# Texas
+tx_baf <- read_csv(file.path(raw_dir, "PLANC2333.csv"),
                    col_types = cols(SCTBKEY = col_character(), 
                                     DISTRICT = col_integer())) %>%
   transmute(block_geoid = SCTBKEY, district = DISTRICT, state_fips = "48")
 
-ca_baf <- read_delim("/Users/binampoudyal/Downloads/ab604.csv",
+# California
+ca_baf <- read_delim(file.path(raw_dir, "ab604.csv"),
                      delim = ",", col_names = c("block_geoid", "district"),
                      col_types = cols(block_geoid = col_character(),
                                       district = col_integer())) %>%
   mutate(state_fips = "06")
 
-mo_baf <- read_excel("/Users/binampoudyal/Downloads/HB1_Missouri_Congressional_Districts_2025_BEF.xlsx") %>%
+# Missouri
+mo_baf <- read_excel(file.path(raw_dir, "HB1_Missouri_Congressional_Districts_2025_BEF.xlsx")) %>%
   transmute(block_geoid = as.character(Block), 
             district = as.integer(DistrictID),
             state_fips = "29")
 
-nc_baf <- read_csv("/Users/binampoudyal/Downloads/NCGA_CCM-2 .csv",
+# North Carolina
+nc_baf <- read_csv(file.path(raw_dir, "NCGA_CCM-2 .csv"),
                    col_types = cols(Block = col_character(),
                                     District = col_integer())) %>%
   transmute(block_geoid = Block, district = District, state_fips = "37")
 
-oh_baf <- read_excel("/Users/binampoudyal/Downloads/October 31 2025 CD BAF.xlsx") %>%
+# Ohio
+oh_baf <- read_excel(file.path(raw_dir, "October 31 2025 CD BAF.xlsx")) %>%
   transmute(block_geoid = as.character(Block), 
             district = as.integer(`DistrictID:1`),
             state_fips = "39")
 
-ut_baf <- read_csv("/Users/binampoudyal/Downloads/ut_cong_adopted_2025_baf.csv",
+# Utah
+ut_baf <- read_csv(file.path(raw_dir, "ut_cong_adopted_2025_baf.csv"),
                    col_types = cols(GEOID20 = col_character(),
                                     DISTRICT = col_integer())) %>%
   transmute(block_geoid = GEOID20, district = DISTRICT, state_fips = "49")
 
-fl_baf <- read_delim("/Users/binampoudyal/Downloads/EOGPCRP2026.csv",
+# Florida
+fl_baf <- read_delim(file.path(raw_dir, "EOGPCRP2026.csv"),
                      delim = ",", col_names = c("block_geoid", "district"),
                      col_types = cols(block_geoid = col_character(),
                                       district = col_integer())) %>%
@@ -278,7 +295,7 @@ cat("Total unique:", n_distinct(ces$lookupzip), "\n")
 # Load ZCTA-block relationship file
 # Read only needed columns -- much faster and less memory
 zcta_block <- fread(
-  "/Users/binampoudyal/Downloads/tab20_zcta520_tabblock20_natl.txt",
+  file.path(raw_dir, "tab20_zcta520_tabblock20_natl.txt"),
   sep = "|",
   select = c("GEOID_ZCTA5_20", "GEOID_TABBLOCK_20"),
   colClasses = list(character = c("GEOID_ZCTA5_20", "GEOID_TABBLOCK_20"))
@@ -562,11 +579,10 @@ ces_in_zero_pop %>%
 # we apply it to CES lookupzip values to assign each CES respondent
 # (in a redistricted state) to their 2026 CD.
 
-saveRDS(zcta_cd_crosswalk, 
-        "/Users/binampoudyal/Downloads/zcta_cd_crosswalk_redistricted.rds")
+saveRDS(zcta_cd_crosswalk, file.path(processed_dir, "zcta_cd_crosswalk_redistricted.rds"))
 cat("\nSaved ZCTA crosswalk\n")
 cat("File size:", 
-    round(file.size("/Users/binampoudyal/Downloads/zcta_cd_crosswalk_redistricted.rds") / 1e6, 2), 
+    round(file.size(file.path(processed_dir, "zcta_cd_crosswalk_redistricted.rds")) / 1e6, 2), 
     "MB\n")
 
 
@@ -590,7 +606,7 @@ cat("File size:",
 #       afact = 1.0
 #
 # Inputs (pums_crosswalked which might need to be loaded since it wasn't part of scripts 8-9, others must be in-memory already):
-#   - ces (harmonized; from Script 07)
+#   - ces (harmonized; from Script 07, also read in script 08)
 #   - pums_crosswalked (harmonized; from Script 07)
 #   - zcta_cd_crosswalk (from Script 09)
 #   - zcta_block (full ZCTA-block file from Script 08; used for diagnostics)
@@ -621,7 +637,6 @@ library(tidyverse)
 redistricted_state_fips_int <- c(6, 12, 29, 37, 39, 48, 49)
 at_large_fips               <- c(2, 10, 38, 46, 50, 56)  # AK, DE, ND, SD, VT, WY
 
-library(tidyverse)
 
 # Constants used across sections
 redistricted_state_fips_int <- c(6, 12, 29, 37, 39, 48, 49)
@@ -630,14 +645,9 @@ at_large_fips               <- c(2, 10, 38, 46, 50, 56)  # AK, DE, ND, SD, VT, W
 # Input loads (only needed if not already in memory from running Scripts 08-09)
 # Comment out any that are already loaded.
 
-# ces <- readRDS("/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_harmonized.rds")
-pums_crosswalked <- readRDS("/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked_harmonized.rds")
-# zcta_cd_crosswalk <- readRDS("/Users/binampoudyal/Downloads/Stratification_Frame_Building/zcta_cd_crosswalk_redistricted.rds")
-# zcta_block       <- fread("/Users/binampoudyal/Downloads/tab20_zcta520_tabblock20_natl.txt",
-#                           sep = "|", select = c("GEOID_ZCTA5_20", "GEOID_TABBLOCK_20"),
-#                           colClasses = list(character = c("GEOID_ZCTA5_20", "GEOID_TABBLOCK_20")))
-
-
+if (!exists("pums_crosswalked")) {
+  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
+}
 
 # ── 1. Stable-state respondents: cdid119 is correct ─────────────────────────
 # Stable-state respondents get one row per respondent with afact = 1.0.
@@ -875,10 +885,7 @@ cat("CES unique state+CD combos: ",
 cat("\nPUMS rows:", nrow(pums_crosswalked), "\n")
 cat("CES rows: ", nrow(ces_with_cd), "\n")
 
-saveRDS(pums_crosswalked, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_crosswalked_harmonized.rds")
-
-saveRDS(ces_with_cd, 
-        "/Users/binampoudyal/Downloads/Stratification_Frame_Building/ces_harmonized.rds")
+saveRDS(pums_crosswalked, file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
+saveRDS(ces_with_cd, file.path(processed_dir, "ces_harmonized.rds"))
 
 cat("\nSaved.\n")
