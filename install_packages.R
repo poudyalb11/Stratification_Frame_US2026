@@ -10,7 +10,7 @@ packages <- c(
   "haven",           # reading Stata .dta and IPUMS data
   "tidycensus",      # querying Census API for block populations
   "rpart",           # CART models
-  "rpart.plot"       # CART visualization
+  "rpart.plot",      # CART visualization
   "janitor"
 )
 
