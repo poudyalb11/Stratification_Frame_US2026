@@ -47,13 +47,21 @@ library(haven)
 #   "Variable groupings and methodology decisions" document for details
 #   on how each is collapsed in Script 03.
 # ══════════════════════════════════════════════════════════════════════════════
-# ── 1. File paths ──────────────────────────────────────────────────────────────
-# Update these to wherever you saved your files
-ddi_path  <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/usa_00003.xml"
-data_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/usa_00003.csv.gz"
-geo_path  <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/geocorr2022_2610104623.csv"
+library(here)
+library(ipumsr)
+library(dplyr)
+library(tidyr)
 
-# ── 2. Load IPUMS extract ──────────────────────────────────────────────────────
+# ── Folder paths ────────────────────────────────────────────────────────────
+raw_dir       <- here("Data_Raw")
+processed_dir <- here("Data_Processed")
+
+# ── 1. File paths ────────────────────────────────────────────────────────────
+ddi_path  <- file.path(raw_dir, "usa_00003.xml")
+data_path <- file.path(raw_dir, "usa_00003.csv.gz")
+geo_path  <- file.path(raw_dir, "geocorr2022_2610104623.csv")
+
+# ── 2. Load IPUMS extract ────────────────────────────────────────────────────
 ddi  <- read_ipums_ddi(ddi_path)
 pums <- read_ipums_micro(ddi, data_file = data_path)
 
@@ -628,10 +636,6 @@ cat("\nReady for PUMA-to-CD crosswalk join.\n")
 
 
 #---- 11. Save to disk --------#
-saveRDS(pums_clean, 
-        file = "/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_clean.rds")
+saveRDS(pums_clean, file.path(processed_dir, "pums_clean.rds"))
 
 cat("Saved successfully.\n")
-cat("File size:", 
-    round(file.size("/Users/binampoudyal/Downloads/Stratification_Frame_Building/pums_clean.rds") / 1e6, 1), 
-    "MB\n")
