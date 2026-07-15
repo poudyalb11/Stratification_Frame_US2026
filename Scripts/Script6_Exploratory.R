@@ -84,30 +84,30 @@ n_distinct(paste(pums_crosswalked$STATEFIP, pums_crosswalked$cd_2026))
 n_distinct(pums_crosswalked$cd_2026)
 
 # 2. How many unique state + cd_2026 combinations?
-n_distinct(paste(pums_crosswalked$state, crosswalk$cd_2026))
+n_distinct(paste(pums_crosswalked$STATEFIP, crosswalk$cd_2026))
 
 # 3. Range of cd_2026 values
 range(pums_crosswalked$cd_2026)
 
 # 4. Look at one specific state to see what cd_2026 looks like for it
 pums_crosswalked %>%
-  filter(state == 6) %>%      # California -- should have 1 through 52
+  filter(STATEFIP == 6) %>%      # California -- should have 1 through 52
   distinct(cd_2026) %>%
   arrange(cd_2026) %>%
   print(n = Inf)
 
 # 5. Same check for a smaller state
 pums_crosswalked %>%
-  filter(state == 36) %>%     # New York -- should have 1 through 26
+  filter(STATEFIP == 36) %>%     # New York -- should have 1 through 26
   distinct(cd_2026) %>%
   arrange(cd_2026) %>%
   print(n = Inf)
 
 # 6. CDs per state -- should match the known House seat distribution
 pums_crosswalked %>%
-  distinct(state, stab, cd_2026) %>%
+  distinct(STATEFIP, stab, cd_2026) %>%
   filter(!cd_2026 %in% c(0, 98)) %>%
-  count(state, stab, name = "n_cds") %>%
+  count(STATEFIP, stab, name = "n_cds") %>%
   arrange(desc(n_cds)) %>%
   print(n = Inf)
 
