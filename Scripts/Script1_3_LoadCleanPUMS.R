@@ -269,7 +269,7 @@ pums %>%
 cat("═══ RACED full distribution ═══\n")
 raced_labels <- ipums_val_labels(ddi, "RACED") %>% rename(raced_label = lbl)
 
-pums_filtered %>%
+pums %>%
   filter(HISPAND == 0) %>%   # non-Hispanics only for RACED
   left_join(raced_labels, by = c("RACED" = "val")) %>%
   group_by(RACED, raced_label) %>%
@@ -286,7 +286,7 @@ pums_filtered %>%
 cat("\n═══ HISPAND full distribution ═══\n")
 hispand_labels <- ipums_val_labels(ddi, "HISPAND") %>% rename(hispand_label = lbl)
 
-pums_filtered %>%
+pums %>%
   filter(HISPAND > 0) %>%    # Hispanics only
   left_join(hispand_labels, by = c("HISPAND" = "val")) %>%
   group_by(HISPAND, hispand_label) %>%
@@ -303,7 +303,7 @@ pums_filtered %>%
 cat("\n═══ EDUCD full distribution ═══\n")
 educd_labels <- ipums_val_labels(ddi, "EDUCD") %>% rename(educd_label = lbl)
 
-pums_filtered %>%
+pums  %>%
   left_join(educd_labels, by = c("EDUCD" = "val")) %>%
   group_by(EDUCD, educd_label) %>%
   summarise(
@@ -317,7 +317,7 @@ pums_filtered %>%
 
 # ── Check for any RACED codes in data not in DDI labels ──────────────────────
 cat("\n═══ RACED codes in data with no matching DDI label ═══\n")
-pums_filtered %>%
+pums %>%
   filter(HISPAND == 0) %>%
   anti_join(raced_labels, by = c("RACED" = "val")) %>%
   group_by(RACED) %>%
@@ -329,7 +329,7 @@ pums_filtered %>%
 
 # ── Check for any HISPAND codes in data not in DDI labels ────────────────────
 cat("\n═══ HISPAND codes in data with no matching DDI label ═══\n")
-pums_filtered %>%
+pums %>%
   filter(HISPAND > 0) %>%
   anti_join(hispand_labels, by = c("HISPAND" = "val")) %>%
   group_by(HISPAND) %>%
