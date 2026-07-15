@@ -276,7 +276,7 @@ pums %>%
   summarise(
     n_records  = n(),
     n_weighted = sum(PERWT),
-    pct        = round(sum(PERWT) / sum(pums_filtered$PERWT) * 100, 4),
+    pct        = round(sum(PERWT) / sum(pums$PERWT) * 100, 4),
     .groups = "drop"
   ) %>%
   arrange(desc(n_weighted)) %>%
@@ -293,7 +293,7 @@ pums %>%
   summarise(
     n_records  = n(),
     n_weighted = sum(PERWT),
-    pct        = round(sum(PERWT) / sum(pums_filtered$PERWT) * 100, 4),
+    pct        = round(sum(PERWT) / sum(pums$PERWT) * 100, 4),
     .groups = "drop"
   ) %>%
   arrange(desc(n_weighted)) %>%
@@ -309,7 +309,7 @@ pums  %>%
   summarise(
     n_records  = n(),
     n_weighted = sum(PERWT),
-    pct        = round(sum(PERWT) / sum(pums_filtered$PERWT) * 100, 4),
+    pct        = round(sum(PERWT) / sum(pums$PERWT) * 100, 4),
     .groups = "drop"
   ) %>%
   arrange(desc(n_weighted)) %>%
