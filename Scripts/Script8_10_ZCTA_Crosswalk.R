@@ -35,14 +35,20 @@ library(readr)
 library(data.table)
 library(tidycensus)
 
+#Memory intensive operations so increasing the vector memory size
+mem.maxVSize(48000)
+
 # ── Folder paths ────────────────────────────────────────────────────────────
 raw_dir       <- here("Data_Raw")
 processed_dir <- here("Data_Processed")
 
 # ── Load harmonized CES ─────────────────────────────────────────────────────
 
-ces <- readRDS(file.path(processed_dir, "ces_harmonized.rds"))
-
+# ── Load harmonized CES ─────────────────────────────────────────────────────
+ces <- readRDS(file.path(processed_dir, "ces_harmonized.rds")) %>%
+  select(-any_of(c("cd_2026", "afact", "state_cat", "cd_cat", 
+                   "cd_2026.x", "cd_2026.y", "afact.x", "afact.y")))
+#The select(-any_of..) has been added to make Script 10 idempotent (safe to run repeatedly without colliding with its own previous outputs)
 
 # ── Census API setup ────────────────────────────────────────────────────────
 readRenviron("~/.Renviron")
@@ -168,17 +174,22 @@ redistricted_fips <- c(6, 12, 29, 37, 39, 48, 49)
 # How many CES respondents are in each scenario?
 ces_geo_breakdown <- ces %>%
   filter(inputstate %in% redistricted_fips) %>%
-  left_join(county_cd_count %>% 
-              mutate(state_fips_int = as.integer(state_fips)),
-            by = c("inputstate" = "state_fips_int", "countyfips" = "county_fips")) %>%
+  mutate(countyfips = sprintf("%05d", as.integer(countyfips))) %>%
+  left_join(
+    county_cd_count %>%
+      mutate(state_fips_int = as.integer(state_fips),
+             county_fips    = sprintf("%05d", as.integer(county_fips))),
+    by = c("inputstate" = "state_fips_int",
+           "countyfips"  = "county_fips")
+  ) %>%
   mutate(scenario = case_when(
-    is.na(n_cds)  ~ "Unmatched (no county)",
-    n_cds == 1    ~ "Clean (1 CD)",
-    n_cds == 2    ~ "2 CDs",
-    n_cds == 3    ~ "3 CDs",
+    is.na(n_cds)   ~ "Unmatched (no county)",
+    n_cds == 1     ~ "Clean (1 CD)",
+    n_cds == 2     ~ "2 CDs",
+    n_cds == 3     ~ "3 CDs",
     n_cds %in% 4:9 ~ "4-9 CDs",
-    n_cds >= 10   ~ "10+ CDs (LA County)",
-    TRUE          ~ "Unknown"
+    n_cds >= 10    ~ "10+ CDs (LA County)",
+    TRUE           ~ "Unknown"
   ))
 
 cat("══ CES respondents in redistricted states, by county scenario ══\n")
@@ -319,6 +330,7 @@ zcta_block_redistricted <- zcta_block[substr(GEOID_TABBLOCK_20, 1, 2) %in% redis
 
 cat("\nFiltered to 7 redistricted states:", nrow(zcta_block_redistricted), "rows\n")
 
+
 # Quick verify: how many unique ZCTAs in our 7 states?
 cat("Unique ZCTAs in redistricted states:", 
     length(unique(zcta_block_redistricted$GEOID_ZCTA5_20)), "\n")
@@ -345,6 +357,8 @@ cat("Total population covered:", sum(all_blocks_pop$value), "\n")
 
 saveRDS(all_bafs, file.path(processed_dir, "all_bafs.rds"))
 saveRDS(all_blocks_pop, file.path(processed_dir, "all_blocks_pop.rds"))
+
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SCRIPT 09: Build ZCTA-to-2026-CD crosswalk for redistricted states
@@ -589,6 +603,21 @@ cat("\nSaved ZCTA crosswalk\n")
 cat("File size:", 
     round(file.size(file.path(processed_dir, "zcta_cd_crosswalk_redistricted.rds")) / 1e6, 2), 
     "MB\n")
+
+# -- 9. Clean Up Memory ------------------------------
+#Some massive files are loaded in these last two scripts. Clearing memory here ensures
+# R does not crash while running the next script (10)
+
+# ── Clean up massive intermediate block tables before running Script 10 ──
+rm(
+  list = intersect(
+    c("zcta_block_redistricted", "all_bafs", 
+      "all_blocks_pop", "baf_data", "block_zcta", "block_pop", "block_full"),
+    ls()
+  )
+)
+gc() # Forces garbage collection to immediately reclaim several GBs of RAM
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -856,10 +885,26 @@ cat("Total DC respondents:", sum(ces_with_cd$inputstate == 11), "\n")
 #    Drop DC entirely from both datasets. DC has a non-voting delegate,
 #    not a House seat, so it has no place in a 435-CD frame.
 
+#-------This is a memory management step before the next runs so R does not crash---#
+# Drop the 8-million row national zcta table  to free ~500MB+ RAM
+rm(zcta_block)
+gc()
+
 # PUMS: drop DC, then recode at-large CDs from 0 to 1
-pums_crosswalked <- pums_crosswalked %>%
-  filter(state_cat != 11) %>%
-  mutate(cd_cat = if_else(cd_cat == 0L, 1L, cd_cat))
+# Note: Memory intensive operation, so we will do it in a memory efficient way
+library(data.table)
+
+# 1. Convert to data.table by reference (zero memory copy)
+setDT(pums_crosswalked)
+
+# 2. Filter out DC (allocates the subset and immediately releases the old table)
+pums_crosswalked <- pums_crosswalked[state_cat != 11]
+
+# 3. Force garbage collection to reclaim RAM from the dropped DC rows
+gc()
+
+# 4. Mutate at-large CDs IN-PLACE (zero memory copy — only modifies rows where cd_cat == 0)
+pums_crosswalked[cd_cat == 0L, cd_cat := 1L]
 
 # CES: drop DC
 ces_with_cd <- ces_with_cd %>%
@@ -869,12 +914,15 @@ ces_with_cd <- ces_with_cd %>%
 pums_combos <- pums_crosswalked %>% distinct(state_cat, cd_cat)
 ces_combos  <- ces_with_cd      %>% distinct(state_cat, cd_cat)
 
+
 cat("══ Combos in PUMS but not in CES (after fixes) ══\n")
 anti_join(pums_combos, ces_combos, by = c("state_cat", "cd_cat")) %>%
+  as_tibble() %>%
   print(n = Inf)
 
 cat("\n══ Combos in CES but not in PUMS (after fixes) ══\n")
 anti_join(ces_combos, pums_combos, by = c("state_cat", "cd_cat")) %>%
+  as_tibble() %>%
   print(n = Inf)
 
 

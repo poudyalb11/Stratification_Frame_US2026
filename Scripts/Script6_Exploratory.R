@@ -84,7 +84,7 @@ n_distinct(paste(pums_crosswalked$STATEFIP, pums_crosswalked$cd_2026))
 n_distinct(pums_crosswalked$cd_2026)
 
 # 2. How many unique state + cd_2026 combinations?
-n_distinct(paste(pums_crosswalked$STATEFIP, crosswalk$cd_2026))
+n_distinct(paste(pums_crosswalked$STATEFIP, pums_crosswalked$cd_2026))
 
 # 3. Range of cd_2026 values
 range(pums_crosswalked$cd_2026)
@@ -150,7 +150,7 @@ library(tidyverse)
 # ── 1. Read CES file ──────────────────────────────────────────────────────────
 raw_dir <- here("Data_Raw")
 
-ces <- read_csv(file.path(raw_dir, "CCES24_Common_OUTPUT_vv_topost_final.csv"))
+ces <- read_csv(file.path(raw_dir, "CCES24_Common_OUTPUT_vv_topost_final.csv"), guess_max = Inf)
 
 
 # ── 2. Top-level dimensions ──────────────────────────────────────────────────
@@ -200,3 +200,6 @@ if (length(year_cols) > 0) {
     print(table(ces[[col]], useNA = "ifany"))
   }
 }
+
+cat("Finished running script 6 successfully")
+
