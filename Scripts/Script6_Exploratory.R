@@ -105,9 +105,9 @@ pums_crosswalked %>%
 
 # 6. CDs per state -- should match the known House seat distribution
 pums_crosswalked %>%
-  distinct(STATEFIP, stab, cd_2026) %>%
+  distinct(STATEFIP, cd_2026) %>%
   filter(!cd_2026 %in% c(0, 98)) %>%
-  count(STATEFIP, stab, name = "n_cds") %>%
+  count(STATEFIP, name = "n_cds") %>%
   arrange(desc(n_cds)) %>%
   print(n = Inf)
 
