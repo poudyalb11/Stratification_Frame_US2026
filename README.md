@@ -31,7 +31,7 @@ cell level on the five demographic dimensions.
  
 ```
 Stratification_Frame_US2026/
-├── Stratification_Frame_US2026.Rproj   # open this first (sets the project root)
+├── stratification_frame_us2026.Rproj   # open this first (sets the project root)
 ├── README.md
 ├── install_packages.R                  # installs all dependencies
 ├── run_all.R                           # runs the full pipeline
@@ -72,9 +72,8 @@ pip install zenodo_get
 zenodo_get 21285306 -o Data_Raw/
 ```
  
-If the deposit contains archives, extract them in place so their
-contents sit directly inside `Data_Raw/`, preserving the original file names.
-See `data_sources.md` for what each file is and where it came from.
+The datasets sit directly inside `Data_Raw/`.
+See `data_sources.md`, which can also be found in the repo root, for what each file is and where it came from.
  
 ### 3. Census API key
  
