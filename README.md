@@ -95,8 +95,7 @@ script errors, check this first.
 The crosswalked person-level PUMS table is ~20.6 million rows, and peak memory
 use during Scripts 8–11 is roughly **10–12 GB**. On macOS, R's default allocation
 ceiling is 16 GB; the pipeline raises it with `mem.maxVSize()` at the top of
-`run_all.R`. If you are on a 16 GB machine you may still need to close other
-applications; **32 GB or more is recommended**.
+`run_all.R`. The code was run on a 16 GB Mac M1 RAM.
  
 ### 5. Install dependencies
  
@@ -184,8 +183,7 @@ inputs, outputs, and key decisions.
 - **A Census-querying script fails with a request error** — your Census API key
   is missing or invalid. See Prerequisite 3.
 - **`vector memory limit reached` (macOS)** — R's allocation ceiling. Confirm the
-  `mem.maxVSize()` call at the top of `run_all.R` executed; close other
-  applications; ideally use a machine with ≥32 GB RAM.
+  `mem.maxVSize()` call at the top of `run_all.R` executed; ideally use a machine with ≥16 GB RAM.
 - **A downstream script can't find an input** — run the pipeline in order from
   the start, or use `Rscript run_all.R <start> <end>` to re-run the needed range;
   intermediates live in `Data_Processed/`.
