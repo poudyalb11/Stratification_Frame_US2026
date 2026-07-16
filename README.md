@@ -115,7 +115,7 @@ source("run_all.R")
 ```
  
 This executes all 18 scripts in order, printing per-script progress and timing.
-A complete run takes **~27 minutes** on a modern laptop, dominated by the Census
+A complete run takes **~27 minutes** on a Mac M1, dominated by the Census
 API queries and the block-level aggregation.
  
 To run a contiguous subset — e.g. when re-running only a downstream stage — pass
@@ -123,6 +123,14 @@ start and end indices:
  
 ```bash
 Rscript run_all.R 5 12    # runs scripts 5 through 12 only
+```
+You can also run as follows on the R console window, which will log all outputs to a run_all_log.txt file
+
+```
+con <- file(here::here("Data_Processed", "run_all_log.txt"), open = "wt")
+sink(con, split = TRUE); sink(con, type = "message")
+source(here::here("run_all.R"))
+sink(type = "message"); sink(); close(con)
 ```
  
 Alternatively, `runner.R` sources the scripts one at a time for interactive,
