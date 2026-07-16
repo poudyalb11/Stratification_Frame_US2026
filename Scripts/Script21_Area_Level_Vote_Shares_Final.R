@@ -26,9 +26,8 @@ final_dir     <- here("Data_Final")
 
 # ── 1. Load and diagnostic ──────────────────────────────────────────────────
 
-if (!exists("training_table")) {
-  training_table <- readRDS(file.path(processed_dir, "training_table_v2.rds"))
-}
+training_table <- readRDS(file.path(processed_dir, "training_table_v2.rds"))
+
 
 cat("══ Structure ══\n")
 cat("Rows:", nrow(training_table), "(expect 435)\n")

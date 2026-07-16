@@ -6,8 +6,8 @@
 #   schemes are used in both. Required for MrsP cell construction.
 #
 # Inputs:
-#   - pums_crosswalked.rds (from Script 05)
-#   - ces (loaded in Script 06)
+#   - pums_crosswalked.rds (from Script 05 loaded from disk)
+#   - ces (loaded in Script 06 loaded from disk)
 #
 # Outputs:
 #   - pums_crosswalked_harmonized.rds
@@ -32,14 +32,12 @@ library(tidyverse)
 raw_dir       <- here("Data_Raw")
 processed_dir <- here("Data_Processed")
 
-# Load inputs if not already in memory
-if (!exists("pums_crosswalked")) {
-  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked.rds"))
-}
+# Load Inputs from Disk
+pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked.rds")) %>%
+  select(-any_of(c("age_cat", "gender_cat", "educ_cat", "hispanic_cat", "race_cat")))
 
-if (!exists("ces")) {
-  ces <- read_csv(file.path(raw_dir, "CCES24_Common_OUTPUT_vv_topost_final.csv"))
-}
+ces <- read_csv(file.path(raw_dir, "CCES24_Common_OUTPUT_vv_topost_final.csv"), show_col_types = FALSE) %>%
+  select(-any_of(c("age_cat", "gender_cat", "educ_cat", "hispanic_cat", "race_cat")))
 
 
 # ── 1. AGE → age_cat ─────────────────────────────────────────────────────────

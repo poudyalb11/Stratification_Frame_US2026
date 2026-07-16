@@ -413,18 +413,13 @@ cd_house_2024 %>%
 library(tidyverse)
 
 
-# ── 1. Load inputs ──────────────────────────────────────────────────────────
-# 
+# ── 1. Load inputs (Strict Read for Idempotency) ─────────────────────────────# 
 
-# cd_house_2024 should already exist from the above script
-if (!exists("cd_house_2024")) {
-  cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
-}
+cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds")) %>%
+  select(-any_of(c("cd_pop", "dem_share", "rep_share", "other_share", "no_vote_share")))
 
-# Load cd_demographics if not in memory (needed for Script 16B)
-if (!exists("cd_demographics")) {
-  cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
-}
+cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
+
 
 cat("══ Inputs loaded ══\n")
 cat("cd_house_2024 rows:  ", nrow(cd_house_2024),   "(expect 435)\n")

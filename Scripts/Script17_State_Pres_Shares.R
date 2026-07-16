@@ -70,18 +70,13 @@ base_path <- "/Users/binampoudyal/Downloads/Stratification_Frame_Building/"
 
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
-# Reload pres_raw if not in memory
-if (!exists("pres_raw")) {
-  cat("pres_raw not in memory -- loading from disk...\n")
-  pres_raw <- read_csv(file.path(raw_dir, "1976-2024-president.csv"),
-                       show_col_types = FALSE)
-}
 
-# Reload cd_demographics if not in memory
-if (!exists("cd_demographics")) {
-  cat("cd_demographics not in memory -- loading from disk...\n")
-  cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
-}
+pres_raw <- read_csv(file.path(raw_dir, "1976-2024-president.csv"),
+                       show_col_types = FALSE)
+
+
+cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
+
 
 cat("══ Inputs loaded ══\n")
 cat("pres_raw rows:        ", nrow(pres_raw), "\n")

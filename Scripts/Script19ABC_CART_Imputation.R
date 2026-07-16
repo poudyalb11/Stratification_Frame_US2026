@@ -62,15 +62,18 @@ processed_dir <- here("Data_Processed")
 
 
 # Shared constants for all three scripts
-control_params <- rpart.control(cp = 0, minsplit = 3, minbucket = 1)
+control_params <- rpart.control(cp = 0, minsplit = 3, minbucket = 1, xval = 0)
 
 non_predictors_common <- c("state_cd", "state_abbrv", "cd_pop",
                            "is_redistricted", "training_eligibility")
 
+#-----------Load Inputs-----------#
+training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
 
-# Load shared input once
-if (!exists("training_table")) {
-  training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
+# If an old 'trees.rds' exists, delete it so we don't accidentally
+# load stale models from a previous session
+if (file.exists(file.path(processed_dir, "trees.rds"))) {
+  file.remove(file.path(processed_dir, "trees.rds"))
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -102,6 +105,7 @@ if (!exists("training_table")) {
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+
 # ── 1. Filter to training set ───────────────────────────────────────────────
 # Training set = ~318 CDs where 2024 House shares are directly usable:
 #   - Stable-state CDs (43 states)
@@ -111,57 +115,25 @@ training_set <- training_table %>% filter(training_eligibility == "training_set"
 
 cat("Training set size:", nrow(training_set), "CDs\n")
 
+# Explicit predictor set — built once, used by 19A/19B/19C.
+outcome_cols   <- c("dem_share", "rep_share", "other_share", "no_vote_share")
+predictor_cols <- setdiff(names(training_table),
+                          c(non_predictors_common, outcome_cols))
+
+stopifnot(length(predictor_cols) == 34)     # must be exactly 34
+stopifnot(!"state_cd" %in% predictor_cols)  # identifier must NOT be a predictor
+
+fml <- function(outcome) reformulate(predictor_cols, response = outcome)
 
 # ── 2. Fit the four trees ────────────────────────────────────────────────────
-# The `. -` shorthand keeps only actual predictors: strip identifiers,
-# modeling flags, and the OTHER 3 outcomes (so tree N doesn't accidentally
-# use outcome M as a predictor).
+# Fit via the explicit 34-predictor formula (fml); identifiers and other outcomes excluded by construction
+
 
 trees <- list()
-
-trees$dem <- rpart(
-  as.formula(paste(
-    "dem_share ~ . -",
-    paste(c(non_predictors_common, "rep_share", "other_share",
-            "no_vote_share"), collapse = " - ")
-  )),
-  data    = training_set,
-  method  = "anova",
-  control = control_params
-)
-
-trees$rep <- rpart(
-  as.formula(paste(
-    "rep_share ~ . -",
-    paste(c(non_predictors_common, "dem_share", "other_share",
-            "no_vote_share"), collapse = " - ")
-  )),
-  data    = training_set,
-  method  = "anova",
-  control = control_params
-)
-
-trees$other <- rpart(
-  as.formula(paste(
-    "other_share ~ . -",
-    paste(c(non_predictors_common, "dem_share", "rep_share",
-            "no_vote_share"), collapse = " - ")
-  )),
-  data    = training_set,
-  method  = "anova",
-  control = control_params
-)
-
-trees$no_vote <- rpart(
-  as.formula(paste(
-    "no_vote_share ~ . -",
-    paste(c(non_predictors_common, "dem_share", "rep_share",
-            "other_share"), collapse = " - ")
-  )),
-  data    = training_set,
-  method  = "anova",
-  control = control_params
-)
+trees$dem     <- rpart(fml("dem_share"),     data = training_set, method = "anova", control = control_params)
+trees$rep     <- rpart(fml("rep_share"),     data = training_set, method = "anova", control = control_params)
+trees$other   <- rpart(fml("other_share"),   data = training_set, method = "anova", control = control_params)
+trees$no_vote <- rpart(fml("no_vote_share"), data = training_set, method = "anova", control = control_params)
 
 cat("\n══ Trees fit ══\n")
 cat("dem:     ", length(unique(trees$dem$where)),     "leaves\n")
@@ -203,8 +175,7 @@ plot_prediction <- function(model, actual, outcome_label, filename) {
   p <- ggplot(df, aes(x = actual, y = predicted)) +
     geom_point(alpha = 0.6, color = "steelblue") +
     geom_abline(linetype = "dashed", color = "red") +
-    xlim(0, 0.6) + 
-    ylim(0, 0.6) +
+    coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +   # no dropping; fits no_vote too
     labs(
       x = paste("Actual", outcome_label),
       y = paste("Predicted", outcome_label),
@@ -252,7 +223,7 @@ cat("Contains: dem, rep, other, no_vote (rpart models)\n")
 #   the training set (317 CDs).
 #
 # Reproducibility:
-#   set.seed(42) is used for the random split, so the same 15 CDs are
+#   set.seed(2026) is used for the random split, so the same 15 CDs are
 #   held out on every run.
 #
 # Sections:
@@ -265,7 +236,7 @@ cat("Contains: dem, rep, other, no_vote (rpart models)\n")
 
 # ── 1. Random 15-CD hold-out split ──────────────────────────────────────────
 
-set.seed(42)
+set.seed(2026)
 holdout_indices <- sample(1:nrow(training_set), 15)
 
 train_subset  <- training_set[-holdout_indices, ]
@@ -280,49 +251,11 @@ cat("Hold-out size:    ", nrow(holdout), "CDs\n")
 
 trees_ho <- list()
 
-trees_ho$dem <- rpart(
-  as.formula(paste(
-    "dem_share ~ . -",
-    paste(c(non_predictors_common, "rep_share", "other_share",
-            "no_vote_share"), collapse = " - ")
-  )),
-  data    = train_subset,
-  method  = "anova",
-  control = control_params
-)
-
-trees_ho$rep <- rpart(
-  as.formula(paste(
-    "rep_share ~ . -",
-    paste(c(non_predictors_common, "dem_share", "other_share",
-            "no_vote_share"), collapse = " - ")
-  )),
-  data    = train_subset,
-  method  = "anova",
-  control = control_params
-)
-
-trees_ho$other <- rpart(
-  as.formula(paste(
-    "other_share ~ . -",
-    paste(c(non_predictors_common, "dem_share", "rep_share",
-            "no_vote_share"), collapse = " - ")
-  )),
-  data    = train_subset,
-  method  = "anova",
-  control = control_params
-)
-
-trees_ho$no_vote <- rpart(
-  as.formula(paste(
-    "no_vote_share ~ . -",
-    paste(c(non_predictors_common, "dem_share", "rep_share",
-            "other_share"), collapse = " - ")
-  )),
-  data    = train_subset,
-  method  = "anova",
-  control = control_params
-)
+trees_ho <- list()
+trees_ho$dem     <- rpart(fml("dem_share"),     data = train_subset, method = "anova", control = control_params)
+trees_ho$rep     <- rpart(fml("rep_share"),     data = train_subset, method = "anova", control = control_params)
+trees_ho$other   <- rpart(fml("other_share"),   data = train_subset, method = "anova", control = control_params)
+trees_ho$no_vote <- rpart(fml("no_vote_share"), data = train_subset, method = "anova", control = control_params)
 
 cat("\n══ Hold-out trees fit ══\n")
 cat("dem:     ", length(unique(trees_ho$dem$where)),     "leaves\n")
@@ -362,12 +295,19 @@ print(holdout_preds, n = Inf, width = Inf)
 
 # ── 4. Aggregate hold-out R² per outcome ───────────────────────────────────
 
-cat("\n══ Hold-out R² per outcome ══\n")
-cat("dem:    ", round(r2(holdout$dem_share, holdout_preds$pred_dem), 4), "\n")
-cat("rep:    ", round(r2(holdout$rep_share, holdout_preds$pred_rep), 4), "\n")
-cat("other:  ", round(r2(holdout$other_share, holdout_preds$pred_other), 4), "\n")
-cat("no_vote:", round(r2(holdout$no_vote_share, holdout_preds$pred_no_vote), 4), "\n")
+cat("dem:    ", round(r2(holdout_preds$dem_share,     holdout_preds$pred_dem),     4), "\n")
+cat("rep:    ", round(r2(holdout_preds$rep_share,     holdout_preds$pred_rep),     4), "\n")
+cat("other:  ", round(r2(holdout_preds$other_share,   holdout_preds$pred_other),   4), "\n")
+cat("no_vote:", round(r2(holdout_preds$no_vote_share, holdout_preds$pred_no_vote), 4), "\n")
 
+
+holdout_r2 <- tibble(
+  outcome = c("dem","rep","other","no_vote"),
+  r2 = c(r2(holdout_preds$dem_share,     holdout_preds$pred_dem),
+         r2(holdout_preds$rep_share,     holdout_preds$pred_rep),
+         r2(holdout_preds$other_share,   holdout_preds$pred_other),
+         r2(holdout_preds$no_vote_share, holdout_preds$pred_no_vote)))
+saveRDS(holdout_r2, file.path(processed_dir, "holdout_r2.rds"))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SCRIPT 19C: Apply CART trees to prediction set (imputation)
@@ -418,13 +358,12 @@ cat("no_vote:", round(r2(holdout$no_vote_share, holdout_preds$pred_no_vote), 4),
 
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
-if (!exists("training_table")) {
-  training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
-}
+training_table <- readRDS(file.path(processed_dir, "training_table.rds")) %>%
+                  select(-any_of("is_imputed"))
 
-if (!exists("trees")) {
-  trees <- readRDS(file.path(processed_dir, "trees.rds"))
-}
+
+trees <- readRDS(file.path(processed_dir, "trees.rds"))
+
 
 cat("Loaded training_table:", nrow(training_table), "rows\n")
 cat("Loaded trees:", length(trees), "models (dem, rep, other, no_vote)\n\n")
@@ -432,12 +371,11 @@ cat("Loaded trees:", length(trees), "models (dem, rep, other, no_vote)\n\n")
 
 # ── 2. Split training vs prediction rows ────────────────────────────────────
 
-training_rows   <- training_table %>% filter(!is_redistricted)
-prediction_rows <- training_table %>% filter(is_redistricted)
+training_rows   <- training_table %>% filter(training_eligibility == "training_set")
+prediction_rows <- training_table %>% filter(training_eligibility == "prediction_set")
 
 cat("Training rows (kept as-is):  ", nrow(training_rows),   "\n")
 cat("Prediction rows (to impute): ", nrow(prediction_rows), "\n")
-
 
 # ── 3. Predict shares for prediction rows ───────────────────────────────────
 # Each tree predicts one share. The 4 predictions per CD are independent —
@@ -492,6 +430,8 @@ simplex_sums <- training_table_v2 %>%
     n          = n()
   )
 print(simplex_sums)
+
+saveRDS(simplex_sums, file.path(processed_dir, "simplex_sums.rds"))
 
 
 # ── 6. Save training_table_v2.rds ───────────────────────────────────────────

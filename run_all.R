@@ -8,6 +8,7 @@
 #   Rscript run_all.R 5 12      # runs only scripts 5 through 12
 
 library(here)
+mem.maxVSize(vsize = 48000)
 
 cat("═══════════════════════════════════════════════════\n")
 cat("Stratification Frame Pipeline — Full Run\n")
@@ -16,7 +17,7 @@ cat("═════════════════════════
 scripts <- c(
   "Scripts/Script1_3_LoadCleanPUMS.R",
   "Scripts/Script4_Build_PUMA_CD_Crosswalk.R",
-  "Scripts/Script5_ApplyPUMACDCrosswalktoPUMS.R",
+  "Scripts/Script5_ApplyPUMACDCrossWalktoPUMS.R",
   "Scripts/Script6_Exploratory.R",
   "Scripts/Script7_Harmonize_DemVar.R",
   "Scripts/Script8_10_ZCTA_Crosswalk.R",

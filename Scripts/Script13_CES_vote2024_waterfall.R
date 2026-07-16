@@ -111,7 +111,8 @@ processed_dir <- here("Data_Processed")
 
 # ── Load inputs from disk ──────────────────────────
 
-ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
+ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds")) %>%
+  select(-any_of("vote_2024")) #added for idempotency
 
 cat("Loaded CES:", nrow(ces_with_cd_v2), "rows x", ncol(ces_with_cd_v2), "cols\n")
 cat("Unique respondents:", n_distinct(ces_with_cd_v2$caseid), "\n\n")

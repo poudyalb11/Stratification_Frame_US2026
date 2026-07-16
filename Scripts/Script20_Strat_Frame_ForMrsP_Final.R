@@ -26,9 +26,8 @@ final_dir     <- here("Data_Final")
 
 # ── 1. Load and diagnostic ──────────────────────────────────────────────────
 
-if (!exists("pums_demographic_cells")) {
-  pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
-}
+pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
+
 
 cat("══ Structure ══\n")
 cat("Rows:", nrow(pums_demographic_cells), "\n")

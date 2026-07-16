@@ -22,9 +22,8 @@ final_dir     <- here("Data_Final")
 
 # ── 1. Load and select columns ──────────────────────────────────────────────
 
-if (!exists("ces")) {
-  ces <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
-}
+ces <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
+
 
 wanted_cols <- c(
   "caseid",

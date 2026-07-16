@@ -114,16 +114,13 @@ processed_dir <- here("Data_Processed")
 #   all_blocks_pop        -- block → 2020 population
 
 
-# ── Guarded input loads ─────────────────────────────────────────────────────
-if (!exists("all_bafs")) {
-  all_bafs <- readRDS(file.path(processed_dir, "all_bafs.rds"))
-}
-if (!exists("cd119_redistricted")) {
-  cd119_redistricted <- readRDS(file.path(processed_dir, "cd119_redistricted.rds"))
-}
-if (!exists("all_blocks_pop")) {
-  all_blocks_pop <- readRDS(file.path(processed_dir, "all_blocks_pop.rds"))
-}
+# ── Fresh input loads ─────────────────────────────────────────────────────
+all_bafs <- readRDS(file.path(processed_dir, "all_bafs.rds"))
+
+cd119_redistricted <- readRDS(file.path(processed_dir, "cd119_redistricted.rds"))
+
+all_blocks_pop <- readRDS(file.path(processed_dir, "all_blocks_pop.rds"))
+
 
 
 
@@ -344,15 +341,11 @@ library(tidyverse)
 
 # ── 1. Load source tables if not in memory ──────────────────────────────────
 
-if (!exists("cd_demographics")) {
-  cat("Loading cd_demographics from disk...\n")
-  cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds"))
-}
+cd_demographics <- readRDS(file.path(processed_dir, "cd_demographics.rds")) %>%
+  select(-any_of(c("state_abbrv"))) # Drop if it exists from a previous run
 
-if (!exists("cd_house_2024")) {
-  cat("Loading cd_house_2024 from disk...\n")
-  cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
-}
+cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds")) %>%
+  select(-any_of(c("contestation_2024"))) # Drop if it exists
 
 if (!exists("state_pres_2024")) {
   cat("Loading state_pres_2024 from disk...\n")
@@ -415,6 +408,7 @@ cat("Cols:", ncol(training_table), "\n")
 # the 2024 result). For now, all 159 redistricted-state CDs are flagged TRUE.
 
 training_table <- training_table %>%
+  select(-any_of("is_redistricted")) %>%
   mutate(is_redistricted = state_abbrv %in% redistricted_states)
 
 
@@ -538,8 +532,7 @@ cat("      on the inheritance table from Script 18A.\n")
 #   uncontested so the model can learn to predict their inflated no_vote_share.
 #
 # Inputs:
-#   training_table.rds       (base version from Script 18B, has 
-#                             coarse is_redistricted based on state)
+#   training_table.rds       (load from disk)
 #   cd_house_2024.rds        (used to compute 2024 contestation)
 #   cd_2026_inheritance.rds  (used to refine is_redistricted for the
 #                             essentially-unchanged CDs)
@@ -557,20 +550,14 @@ library(tidyverse)
 # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
 
-if (!exists("training_table")) {
-  cat("Loading training_table from disk...\n")
-  training_table <- readRDS(file.path(processed_dir, "training_table.rds"))
-}
+# ── 1. Load fresh ──────────────────────────────────────────────────────────
+# Reload the base training table created in 18B.
+# Drop the refined columns so we can re-derive them from the base state.
+training_table <- readRDS(file.path(processed_dir, "training_table.rds")) %>%
+  select(-any_of(c("contestation", "training_eligibility")))
 
-if (!exists("cd_house_2024")) {
-  cat("Loading cd_house_2024 from disk...\n")
-  cd_house_2024 <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
-}
-
-if (!exists("cd_2026_inheritance")) {
-  cat("Loading cd_2026_inheritance from disk...\n")
-  cd_2026_inheritance <- readRDS(file.path(processed_dir, "cd_2026_inheritance.rds"))
-}
+cd_house_2024       <- readRDS(file.path(processed_dir, "cd_house_2024.rds"))
+cd_2026_inheritance <- readRDS(file.path(processed_dir, "cd_2026_inheritance.rds"))
 
 
 cat("══ Inputs loaded ══\n")
@@ -706,6 +693,4 @@ training_table %>%
 saveRDS(training_table, file.path(processed_dir, "training_table.rds"))
 
 cat("\nSaved training_table.rds with:\n")
-cat("  - refined is_redistricted (essentially-unchanged CDs → FALSE)\n")
-cat("  - new contestation column (>10 vote threshold + 4 overrides)\n")
-cat("  - training_eligibility (2-value: training_set / prediction_set)\n")
+

@@ -66,26 +66,26 @@ library(data.table)
 raw_dir       <- here("Data_Raw")
 processed_dir <- here("Data_Processed")
 
-# ── Load inputs from disk if not already in memory ──────────────────────────
-if (!exists("all_bafs")) {
-  all_bafs <- readRDS(file.path(processed_dir, "all_bafs.rds"))
-}
+# ── Load inputs from disk  ──────────────────────────
 
-if (!exists("all_blocks_pop")) {
-  all_blocks_pop <- readRDS(file.path(processed_dir, "all_blocks_pop.rds"))
-}
+all_bafs <- readRDS(file.path(processed_dir, "all_bafs.rds"))
 
-if (!exists("zcta_cd_crosswalk")) {
-  zcta_cd_crosswalk <- readRDS(file.path(processed_dir, "zcta_cd_crosswalk_redistricted.rds"))
-}
 
-if (!exists("ces_with_cd")) {
-  ces_with_cd <- readRDS(file.path(processed_dir, "ces_harmonized.rds"))
-}
 
-if (!exists("pums_crosswalked")) {
-  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
-}
+all_blocks_pop <- readRDS(file.path(processed_dir, "all_blocks_pop.rds"))
+
+
+
+zcta_cd_crosswalk <- readRDS(file.path(processed_dir, "zcta_cd_crosswalk_redistricted.rds"))
+
+
+
+ces_with_cd <- readRDS(file.path(processed_dir, "ces_harmonized.rds"))
+
+
+
+pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
+
 
 # ── Load NationalCD119 BAF ──────────────────────────────────────────────────
 cd119_baf <- fread(

@@ -10,7 +10,7 @@
 # Examples: TX-1, FL-2, PA-1, CA-12
 #
 # Inputs:
-#   - pums_demographic_cells (in-memory from Script 11, or reloaded from disk)
+#   - pums_demographic_cells (reloaded from disk)
 #   - ces_with_cd_v2.rds (from Script 13)
 #
 # Outputs (both overwrite existing files):
@@ -57,16 +57,15 @@ cat("States:", nrow(state_fips_to_abb), "\n")
 
 
 
-if (!exists("pums_demographic_cells")) {
-  cat("pums_demographic_cells not in memory -- loading...\n")
-  pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
-  
-  cat("Loaded.\n")
-} else {
-  cat("pums_demographic_cells already in memory.\n")
-}
+# ── 2. Apply to pums_demographic_cells ──────────────────────────────────────
+pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds")) %>%
+  select(-any_of(c("state_abbrv", "state_cd"))) %>% # IDEMPOTENCY FIX
+  left_join(state_fips_to_abb, by = "state_cat") %>%
+  mutate(state_cd = paste0(state_abbrv, "-", cd_cat))
 
-pums_demographic_cells <- pums_demographic_cells %>%
+# ── 3. Apply to ces_with_cd_v2 ──────────────────────────────────────────────
+ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds")) %>%
+  select(-any_of(c("state_abbrv", "state_cd"))) %>% # IDEMPOTENCY FIX
   left_join(state_fips_to_abb, by = "state_cat") %>%
   mutate(state_cd = paste0(state_abbrv, "-", cd_cat))
 
@@ -88,13 +87,10 @@ pums_demographic_cells %>%
 # ── 3. Apply to ces_with_cd_v2 ──────────────────────────────────────────────
 # Load if needed (using v2 which has the final renumbering applied)
 
-if (!exists("ces_with_cd_v2")) {
-  cat("ces_with_cd_v2 not in memory -- loading...\n")
-  ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
-  cat("Loaded.\n")
-} else {
-  cat("ces_with_cd_v2 already in memory.\n")
-}
+
+ces_with_cd_v2 <- readRDS(file.path(processed_dir, "ces_with_cd_v2.rds"))
+cat("Loaded.\n")
+
 
 ces_with_cd_v2 <- ces_with_cd_v2 %>%
   left_join(state_fips_to_abb, by = "state_cat") %>%

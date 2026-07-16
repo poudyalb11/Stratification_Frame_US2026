@@ -1,6 +1,10 @@
-# install_packages.R
+# set memory size, install_packages.R
 # Run this once before running any pipeline script.
 # Installs all R packages required by the Stratification Frame pipeline.
+
+
+#Memory intensive operations so increasing the vector memory size
+mem.maxVSize(48000)
 
 packages <- c(
   "tidyverse",       # data manipulation, ggplot2, tidyr, dplyr, purrr, etc.
@@ -13,6 +17,8 @@ packages <- c(
   "rpart.plot",      # CART visualization
   "janitor"
 )
+
+library(here) #used throughout for directory reference
 
 # Install missing packages
 missing <- packages[!packages %in% installed.packages()[, "Package"]]

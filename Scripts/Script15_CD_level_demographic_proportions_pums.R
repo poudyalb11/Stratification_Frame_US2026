@@ -19,7 +19,7 @@
 #         pct_educ_post_grad, etc.
 #
 # Inputs:
-#   - pums_demographic_cells.rds (from Script 14; ~498K rows, one per
+#   - pums_demographic_cells.rds (read from disk; ~498K rows, one per
 #     unique demographic × geographic combination, with cell_pop weighted
 #     population and state_cd identifier)
 #
@@ -40,20 +40,15 @@
 
 library(tidyverse)
 
-# ── 1. Load latest stratification frame/demographic cells if not already in memory ────────────────
+# ── 1. Load latest stratification frame/demographic cells from disk ────────────────
 # pums_demographic_cells is the canonical poststratification frame: one row
 # per (state, CD, age, gender, race, hispanic, education) cell, with cell_pop
 # as the weighted population in that cell. This is derived from pums_frame
 # (the row-level PUMS) and is the smaller, modeling-ready version.
 
-if (!exists("pums_demographic_cells")) {
-  cat("pums_demographic_cells not in memory -- loading...\n")
-  pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
-  
-  cat("Loaded.\n")
-} else {
-  cat("pums_demographic_cells already in memory.\n")
-}
+# Always read fresh from disk to ensure idempotency
+pums_demographic_cells <- readRDS(file.path(processed_dir, "pums_demographic_cells.rds"))
+cat("Loaded pums_demographic_cells fresh from disk.\n")  
 
 cat("Rows:", nrow(pums_demographic_cells), "\n")
 cat("Cols:", ncol(pums_demographic_cells), "\n")
@@ -176,8 +171,10 @@ cd_pops <- pums_demographic_cells %>%
   summarise(cd_pop = sum(cell_pop), .groups = "drop")
 
 
-# ── 6. Combine all proportion tables and total pop into one CD-level dataset ─
+# ── 6. Combine all proportion tables ─
+# Ensure we start fresh by dropping any previously created proportion columns
 cd_demographics <- cd_pops %>%
+  select(state_cd, cd_pop) %>% # Keep only the core identifiers
   left_join(age_props,      by = "state_cd") %>%
   left_join(gender_props,   by = "state_cd") %>%
   left_join(race_props,     by = "state_cd") %>%

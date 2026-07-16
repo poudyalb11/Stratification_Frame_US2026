@@ -33,6 +33,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 library(tidyverse)
+library(data.table)
+library(here)       
 
 # ── 1. Load harmonized PUMS from disk ────────────────────────────────────────
 

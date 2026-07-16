@@ -44,11 +44,11 @@ processed_dir <- here("Data_Processed")
 
 # ── Load harmonized CES ─────────────────────────────────────────────────────
 
-# ── Load harmonized CES ─────────────────────────────────────────────────────
 ces <- readRDS(file.path(processed_dir, "ces_harmonized.rds")) %>%
   select(-any_of(c("cd_2026", "afact", "state_cat", "cd_cat", 
-                   "cd_2026.x", "cd_2026.y", "afact.x", "afact.y")))
-#The select(-any_of..) has been added to make Script 10 idempotent (safe to run repeatedly without colliding with its own previous outputs)
+                   "cd_2026.x", "cd_2026.y", "afact.x", "afact.y"))) %>%
+  distinct(caseid, .keep_all = TRUE) 
+#The select(-any_of..) and distinct() has been added to make Script 10 idempotent (safe to run repeatedly without colliding with its own previous outputs)
 
 # ── Census API setup ────────────────────────────────────────────────────────
 readRenviron("~/.Renviron")
@@ -679,9 +679,7 @@ at_large_fips               <- c(2, 10, 38, 46, 50, 56)  # AK, DE, ND, SD, VT, W
 # Input loads (only needed if not already in memory from running Scripts 08-09)
 # Comment out any that are already loaded.
 
-if (!exists("pums_crosswalked")) {
-  pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
-}
+pums_crosswalked <- readRDS(file.path(processed_dir, "pums_crosswalked_harmonized.rds"))
 
 # ── 1. Stable-state respondents: cdid119 is correct ─────────────────────────
 # Stable-state respondents get one row per respondent with afact = 1.0.
@@ -706,7 +704,10 @@ zcta_xw_for_join <- zcta_cd_crosswalk %>%
 
 ces_redistricted_matched <- ces %>%
   filter(inputstate %in% redistricted_state_fips_int) %>%
-  inner_join(zcta_xw_for_join, by = c("lookupzip" = "zcta"))
+  inner_join(zcta_xw_for_join, by = c("lookupzip" = "zcta"),
+            relationship = "many-to-many")
+# ^ genuinely M:M — many respondents share a ZIP, many CDs per ZCTA.
+#   Verified: afact sums to 1 per caseid, output = 69,020 rows.
 
 cat("Redistricted-state respondents matched via ZCTA:", 
     nrow(ces_redistricted_matched), "\n")
