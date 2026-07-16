@@ -4,8 +4,6 @@ library(janitor)
 library(haven)
 library(here)
 library(ipumsr)
-library(dplyr)
-library(tidyr)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SCRIPT 01: Load IPUMS PUMS extract and run initial diagnostics
