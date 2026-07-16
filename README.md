@@ -69,7 +69,7 @@ command-line tool:
 ```bash
 pip install zenodo_get
 # from the repository root:
-zenodo_get RECORD_ID -o Data_Raw/
+zenodo_get 21285306 -o Data_Raw/
 ```
  
 Replace `RECORD_ID` with the Zenodo record number (the digits at the end of the
