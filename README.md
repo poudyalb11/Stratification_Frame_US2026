@@ -2,7 +2,7 @@
  
 This repository builds a demographic **stratification frame** and the associated
 **area-level vote-share** and **CES respondent** files used as inputs to a
-Multilevel Regression with Synthetic Poststratification (MrsP) model, which is used to build a final (demographics x votes) stratification frame for predicting voting preferences in the US House election 2026.
+Multilevel Regression with Synthetic Poststratification (MrsP) model, which is used to build a final (demographics x votes) stratification frame for predicting voting preferences in the US 2026 House elections (2026 Midterm elections).
  
 The pipeline takes public microdata (ACS PUMS, CES 2024), boundary reference
 files (Census relationship files, Block Assignment Files, Geocorr), and election
