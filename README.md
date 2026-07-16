@@ -54,7 +54,7 @@ control (see `.gitignore`); the directory structure is preserved via `.gitkeep`.
  
 ### 1. Open the project
  
-Open `Stratification_Frame_US2026.Rproj` in RStudio, **or** set your working
+Open `stratification_frame_us2026.Rproj` in RStudio, **or** set your working
 directory to the repository root before running anything. All paths are resolved
 relative to the project root by the [`here`](https://here.r-lib.org/) package. If
 you run from the wrong directory — or the `.Rproj` file is missing — `here()`
