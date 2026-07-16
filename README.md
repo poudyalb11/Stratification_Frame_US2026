@@ -72,8 +72,7 @@ pip install zenodo_get
 zenodo_get 21285306 -o Data_Raw/
 ```
  
-Replace `RECORD_ID` with the Zenodo record number (the digits at the end of the
-record URL). If the deposit contains archives, extract them in place so their
+If the deposit contains archives, extract them in place so their
 contents sit directly inside `Data_Raw/`, preserving the original file names.
 See `data_sources.md` for what each file is and where it came from.
  
